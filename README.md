@@ -1,6 +1,11 @@
 # VI-Explorer.ts
 This is a web-based LabView-VI-File reader. You can open a .vi file from you disk and have a look into it's data or change thinks in it.
 
+<p style="text-align:center" align="center">
+<a href="https://vi.hmilch.net/">🎉 run the "VI-Explorer.ts" 🎉</a>
+</p>
+
+
 ## How to run
 You need to install [Node.js](https://nodejs.org/) to compile and run this *single-page application*. To load all dependencies you need to run the command:
 
