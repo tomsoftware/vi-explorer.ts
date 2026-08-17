@@ -1,0 +1,14 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "composite": true,
+        "declaration": true,
+        "outDir": "dist",
+        "baseUrl": "../..",
+        "paths": {
+            "@tomsoftware/logger": ["packages/logger/src"]
+        }
+    },
+    "include": ["src/**/*.ts", "index.ts"],
+    "exclude": ["node_modules"]
+}

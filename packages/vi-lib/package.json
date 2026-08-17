@@ -1,0 +1,30 @@
+{
+  "name": "@tomsoftware/vi-lib",
+  "version": "0.0.1",
+  "description": "Library for low level reading of vi files",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Thomas Zeugner",
+  "license": "MIT",
+  "homepage": "https://github.com/tomsoftware/",
+
+  "keywords": [
+    "StormLib",
+    "mqp file format"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "fflate": "^0.7.3",
+    "@tomsoftware/logger": "workspace:*",
+    "@tomsoftware/virtual-fs": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3"
+  }
+}

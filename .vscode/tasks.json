@@ -1,24 +1,12 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"type": "npm",
-			"script": "serve",
-			"group": "build",
-			"problemMatcher": [],
-			"label": "npm: serve",
-			"detail": "vue-cli-service serve"
-		},
-		{
-			"type": "shell",
-			"group": "test",
-			"command": "npm",
-			"label": "npm: test",
-			"args": [
-				"run",
-				"test",
-				"test\\unit\\basic-block-diagram-reading.spec.ts"
-			]
-		},
-	]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "pnpm: dev",
+      "type": "shell",
+      "command": "pnpm run dev",
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
 }

@@ -1,0 +1,25 @@
+{
+  "name": "@tomsoftware/hex-view-control",
+  "version": "0.0.1",
+  "description": "HTML Web Component to display Hex-Dumps",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Thomas Zeugner",
+  "license": "MIT",
+  "homepage": "https://github.com/tomsoftware/",
+
+  "keywords": [
+    "Web Component",
+    "Hex View"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3"
+  }
+}

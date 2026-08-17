@@ -1,5 +1,11 @@
 import { createApp } from 'vue';
-import App from './ui/app.vue';
-import router from './ui/router';
+import { router } from './router';
+import './style.css';
+import App from './app.vue';
 
-createApp(App).use(router).mount('#app');
+// Import and register the custom hex-view element
+import '@tomsoftware/hex-view-control'
+
+createApp(App)
+    .use(router)
+    .mount('#app');

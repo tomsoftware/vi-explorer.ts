@@ -1,44 +1,24 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+    "target": "es2016",
     "module": "esnext",
-    "strict": true,
-    "jsx": "preserve",
-    "moduleResolution": "node",
-    "experimentalDecorators": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "useDefineForClassFields": true,
-    "sourceMap": true,
-    "baseUrl": ".",
-    "types": [
-      "webpack-env",
-      "mocha",
-      "chai",
-      "node"
-    ],
+    "moduleResolution": "bundler",
+    /*
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
-    },
-    "lib": [
-      "esnext",
-      "dom",
-      "dom.iterable",
-      "scripthost"
-    ]
+      "@tomsoftware/logger": ["packages/logger/src"],
+      "@tomsoftware/virtual-fs": ["packages/virtual-fs/src"],
+      "@tomsoftware/hex-view-control": ["packages/hex-view-control/src"],
+      "@tomsoftware/vi-lib": ["packages/vi-lib/src"],
+    }
+    */
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.vue",
-    "tests/**/*.ts",
-    "tests/**/*.tsx"
-  ],
-  "exclude": [
-    "node_modules"
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" },
+    { "path": "./packages/logger" },
+    { "path": "./packages/virtual-fs" },
+    { "path": "./packages/hex-view-control" },
+    { "path": "./packages/vi-lib" },
   ]
 }

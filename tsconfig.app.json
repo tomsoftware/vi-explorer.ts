@@ -1,0 +1,29 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "outDir": "dist",
+    "declaration": true,
+    "types": ["vite/client"],
+    "composite": true,
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "noUncheckedIndexedAccess": false
+  },
+  "references": [
+    { "path": "./packages/logger" },
+    { "path": "./packages/virtual-fs" },
+    { "path": "./packages/hex-view-control" },
+    { "path": "./packages/vi-lib" }
+  ],
+  "include": [
+      "src/**/*.ts",
+      "src/**/*.vue",
+      "src/**/*.d.ts"
+  ]
+}
