@@ -21,7 +21,6 @@ const fileListFiltered = computed(() => {
   return fileList.value.filter(f => f.toLowerCase().indexOf(filterValue) >= 0)
 });
 
-let reader: ViFile;
 
 function setHexViewValue(file: VirtualFile | null) {
   if ((hexView == null) || (hexView.value == null) || (file == null)) {
@@ -57,8 +56,7 @@ onMounted(async () => {
   const httpProvider = await HttpFileProvider.fromUrlList('test-files/', 'file-list.txt')
   fs.registerFileProvider(httpProvider);
 
-  // read resource file
-  const list = fs.getFiles('');
+  const list = fs.getDirectories('');
   fileList.value = list;
  
 

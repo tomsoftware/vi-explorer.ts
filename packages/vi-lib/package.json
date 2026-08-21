@@ -13,8 +13,8 @@
   "homepage": "https://github.com/tomsoftware/",
 
   "keywords": [
-    "StormLib",
-    "mqp file format"
+    "VI-Lib",
+    "vi file format"
   ],
   "scripts": {
     "build": "tsc"

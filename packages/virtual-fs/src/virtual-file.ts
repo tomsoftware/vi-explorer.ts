@@ -39,9 +39,11 @@ export abstract class VirtualFile {
     }
    
     /** Create a new VirtualFile for the given sub buffer */
-    public getSubReader(offset: number, length: number): VirtualFile {
+    public getSubReader(offset: number, length?: number): VirtualFile {
         const fileLength = this.length();
         let data: Uint8Array;
+
+        length = length ?? fileLength;
 
         if ((offset < 0) || (length < 0) || (offset + length) > fileLength) {
             VirtualFile.logger.error('Try to read out of buffer [from: {0}, length: {1}] in file "{2}"',
@@ -71,6 +73,19 @@ export abstract class VirtualFile {
         ) >>> 0;;
     }
 
+    /** Read a unsigned big ending int32 from the file */
+    public readUInt32BE(): number {
+        const bytes = this.getBytes(this.offset, 4);
+        this.offset += 4;
+        return (
+            (bytes[0] << 24) |
+            (bytes[1] << 16) |
+            (bytes[2] << 9) |
+            (bytes[3])
+        ) >>> 0;;
+    }
+
+
     /** Read a unsigned little ending int16 from the file */
     public readUInt16LE(): number {
         const bytes = this.getBytes(this.offset, 2);
@@ -80,6 +95,17 @@ export abstract class VirtualFile {
             (bytes[1] << 8)
         );
     }
+
+     /** Read a unsigned big ending int16 from the file */
+    public readUInt16BE(): number {
+        const bytes = this.getBytes(this.offset, 2);
+        this.offset += 2;
+        return (
+            (bytes[0] << 8) |
+            (bytes[1])
+        );
+    }
+
 
     /** Read a single byte from the file */
     public readByte(): number {

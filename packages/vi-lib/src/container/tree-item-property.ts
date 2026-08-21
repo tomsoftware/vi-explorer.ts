@@ -16,7 +16,7 @@ export class TreeItemProperty extends TreeItem {
       TreeItemProperty.logging.error('Error - Property length - >6  @ ' + pos);
     } else if (argLen === 6) {
       argLen = cRead.readByte();
-      if (argLen === 255) argLen = cRead.readUInt16LE();
+      if (argLen === 255) argLen = cRead.readUInt16BE();
     } else if (argLen === 0) {
       // if (objectTypeId == 0x2D || objectTypeId == 0xD6 || objectTypeId == 0x4C || objectTypeId == 0x5F || objectTypeId == 0x20D || objectTypeId == 0x229 || objectTypeId == 0x4A || objectTypeId == 0x8B || objectTypeId == 0x87 || objectTypeId == 0x7A || objectTypeId == 0x1F || objectTypeId == 0x23 || objectTypeId == 0x76) {
       // console.error('argLen == 0 --> 8');

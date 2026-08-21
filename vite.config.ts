@@ -16,7 +16,7 @@ export default defineConfig({
       '@tomsoftware/logger': path.resolve(__dirname, 'packages/logger/index.ts'),
       '@tomsoftware/virtual-fs': path.resolve(__dirname, 'packages/virtual-fs/index.ts'),
       '@tomsoftware/hex-view-control': path.resolve(__dirname, 'packages/hex-view-control/index.ts'),
-      '@tomsoftware/vi-lib': path.resolve(__dirname, 'packages/storm-lib/index.ts')
+      '@tomsoftware/vi-lib': path.resolve(__dirname, 'packages/vi-lib/index.ts')
     }
   },
   optimizeDeps: {

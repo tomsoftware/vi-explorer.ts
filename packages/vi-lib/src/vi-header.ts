@@ -91,20 +91,20 @@ export class ViHeader {
 
   private readResourceHeader(reader: VirtualFile): ResourcesListHeader {
     return {
-      dataSetOffset: reader.readUInt32LE(),
-      dataSetSize: reader.readUInt32LE(),
-      dataSetINT1: reader.readUInt32LE(),
-      dataSetINT2: reader.readUInt32LE(),
-      dataSetINT3: reader.readUInt32LE(),
-      resourceListOffset: reader.readUInt32LE(),
-      fileNameOffset: reader.readUInt32LE()
+      dataSetOffset: reader.readUInt32BE(),
+      dataSetSize: reader.readUInt32BE(),
+      dataSetINT1: reader.readUInt32BE(),
+      dataSetINT2: reader.readUInt32BE(),
+      dataSetINT3: reader.readUInt32BE(),
+      resourceListOffset: reader.readUInt32BE(),
+      fileNameOffset: reader.readUInt32BE()
     };
   }
 
   private readBaseHeader(reader: VirtualFile): BaseViHeader | null {
     const offset = reader.tell();
     const identifier1 = reader.readAsciiString(6);
-    const identifier2 = reader.readUInt16LE();
+    const identifier2 = reader.readUInt16BE();
     const identifier3 = reader.readAsciiString(4);
     const identifier4 = reader.readAsciiString(4);
 
@@ -132,8 +132,8 @@ export class ViHeader {
       identifier2,
       identifier3,
       identifier4,
-      rsrcOffset: reader.readUInt32LE(),
-      rsrcSize: reader.readUInt32LE()
+      rsrcOffset: reader.readUInt32BE(),
+      rsrcSize: reader.readUInt32BE()
     };
   }
 }

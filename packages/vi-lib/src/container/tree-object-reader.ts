@@ -22,16 +22,16 @@ export class TreeObjectReader {
 
     // Read "Struct-Header"
     if (version === FileVersion.C) {
-      pos = reader.readUInt32LE();
+      pos = reader.readUInt32BE();
       containerOffset = reader.tell();
 
       reader.seek(pos);
-      dataLength = reader.readUInt32LE();
+      dataLength = reader.readUInt32BE();
 
       dataOffset = pos - dataLength;
       containerLength = pos - dataLength - containerOffset;
     } else if (version === FileVersion.B) {
-      containerLength = reader.readUInt32LE();
+      containerLength = reader.readUInt32BE();
       containerOffset = reader.tell();
 
       dataOffset = containerLength + containerOffset;

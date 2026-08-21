@@ -19,17 +19,17 @@ export class ViResourceContainer {
   constructor(reader: VirtualFile, dataReader: VirtualFile) {
     // Read basic resource information
     this.name = reader.readAsciiString(4);
-    this.count = reader.readUInt32LE() + 1;
+    this.count = reader.readUInt32BE() + 1;
     // not sure about versions before 8.0
-    this.headerOffset = reader.readUInt32LE();
+    this.headerOffset = reader.readUInt32BE();
 
     // read resource data header
     const headerReader = reader.getSubReader(this.headerOffset);
-    this.INT1 = headerReader.readUInt32LE();
-    this.INT2 = headerReader.readUInt32LE();
-    this.INT3 = headerReader.readUInt32LE();
-    this.dataOffset = headerReader.readUInt32LE();
-    this.INT4 = headerReader.readUInt32LE();
+    this.INT1 = headerReader.readUInt32BE();
+    this.INT2 = headerReader.readUInt32BE();
+    this.INT3 = headerReader.readUInt32BE();
+    this.dataOffset = headerReader.readUInt32BE();
+    this.INT4 = headerReader.readUInt32BE();
 
     this.reader = dataReader.getSubReader(this.dataOffset);
 
@@ -46,7 +46,7 @@ export class ViResourceContainer {
 
     for (let i = 0; i < index && !this.reader.eof(); i++) {
       this.reader.seek(offset);
-      const size = this.reader.readUInt32LE();
+      const size = this.reader.readUInt32BE();
       offset += size;
 
       // pad the size 4 Bytes
@@ -62,14 +62,14 @@ export class ViResourceContainer {
     }
 
     this.reader.seek(offset);
-    const size = this.reader.readUInt32LE();
+    const size = this.reader.readUInt32BE();
 
     if (!useCompression) {
       // return plain data
       return this.reader.getSubReader(offset + 4, size);
     }
 
-    const unpackedSize = this.reader.readUInt32LE();
+    const unpackedSize = this.reader.readUInt32BE();
 
     // decompress
     this.reader.seek(offset + 8);

@@ -18,7 +18,7 @@ export class ViResources {
     reader.seek(0);
 
     // read number of resources
-    const count = reader.readUInt32LE() + 1;
+    const count = reader.readUInt32BE() + 1;
     ViResources.logging.log('Found Resources: ' + count);
 
     if (count > 1000) {
