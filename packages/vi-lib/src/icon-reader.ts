@@ -35,8 +35,7 @@ export class IconReader {
         continue;
       }
 
-      const icon = new IconClass(name);
-      icon.load(reader);
+      const icon = new IconClass(reader);
       this.icons.push(icon);
     }
 
