@@ -3,7 +3,7 @@ import { ViResources } from '../vi-resources';
 import { Tools } from '../tools';
 
 export class BDPW {
-  private static logging = new Logger('ViResources');
+  private static logging = new Logger('BDPW');
 
   private m_FileHasPassword = false;
   private m_VCTP: any;

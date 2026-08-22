@@ -4,6 +4,8 @@ import { Logger } from '@tomsoftware/logger';
 export interface BaseViHeader {
     /** position of header in File */
     offset: number;
+    /** position of the resources block in the file */
+    resourceListOffset: number;
     /** magic of VI Vile */
     identifier1: string;
     /** magic of VI Vile */
@@ -27,7 +29,7 @@ export interface ResourcesListHeader {
     dataSetINT3: number;
 
     resourceListOffset: number;
-    fileNameOffset: number;
+    resourceListSize: number;
 }
 
 export class ViHeader {
@@ -41,47 +43,42 @@ export class ViHeader {
   constructor(reader: VirtualFile) {
     this.reader = reader;
 
-    const rootHeader = this.readBaseHeader(reader);
-    if (rootHeader == null) {
-      ViHeader.logging.error('Bad file header!');
-      return;
-    }
-
-    // move to real header
-    reader.seek(rootHeader.rsrcOffset);
-
-    // read real header
-    this.baseHeader = this.readBaseHeader(reader);
+    // find and read basic header
+    this.baseHeader = this.findLastBasicHeader(reader);
     if (this.baseHeader == null) {
-      ViHeader.logging.error('No resource header found in file!');
+      ViHeader.logging.error('No basic header found in file!');
       return;
     }
 
     // read resource header
-    this.resourcesHeader = this.readResourceHeader(reader);
+    this.resourcesHeader = this.readResourceHeader(reader, this.baseHeader);
 
-    // read filename
-    reader.seek(rootHeader.rsrcOffset + this.resourcesHeader.fileNameOffset);
-
+    // read resource headers - ??
     this.fileName = this.readFileName(reader);
 
     ViHeader.logging.log('Read VI header with internal name: ' + this.fileName);
   }
 
-  public getResourceHeaderReader(): VirtualFile | null {
-    if ((this.baseHeader == null) || (this.resourcesHeader == null)) {
-      return null;
+  /** Find and read the last basic header of this VI file */
+  private findLastBasicHeader(reader: VirtualFile): BaseViHeader | null {
+    let curPos = 0;
+    let lastPos = -1;
+    let header: BaseViHeader | null = null;
+
+    // move as long as no new header with different offset has been found
+    while (lastPos != curPos) {
+      lastPos = curPos;
+
+      header = this.readBaseHeader(reader, curPos);
+
+      if ((header == null) || (header.rsrcOffset <= 0) || (header.rsrcSize <= 0)) {
+        return null;
+      }
+
+      curPos = header.rsrcOffset;
     }
 
-    return this.reader.getSubReader(this.baseHeader.rsrcOffset + this.resourcesHeader.resourceListOffset);
-  }
-
-  public getDataReader(): VirtualFile | null {
-    if (this.resourcesHeader == null) {
-      return null;
-    }
-
-    return this.reader.getSubReader(this.resourcesHeader.dataSetOffset, this.resourcesHeader.dataSetSize);
+    return header;
   }
 
   private readFileName(reader: VirtualFile): string | null {
@@ -89,30 +86,36 @@ export class ViHeader {
     return reader.readAsciiString(size);
   }
 
-  private readResourceHeader(reader: VirtualFile): ResourcesListHeader {
+  private readResourceHeader(reader: VirtualFile, basicHeader: BaseViHeader): ResourcesListHeader {
+    reader.seek(basicHeader.resourceListOffset);
+
     return {
       dataSetOffset: reader.readUInt32BE(),
       dataSetSize: reader.readUInt32BE(),
       dataSetINT1: reader.readUInt32BE(),
       dataSetINT2: reader.readUInt32BE(),
       dataSetINT3: reader.readUInt32BE(),
-      resourceListOffset: reader.readUInt32BE(),
-      fileNameOffset: reader.readUInt32BE()
+      resourceListOffset: reader.readUInt32BE() + basicHeader.rsrcOffset,
+      resourceListSize: reader.readUInt32BE()
     };
   }
 
-  private readBaseHeader(reader: VirtualFile): BaseViHeader | null {
-    const offset = reader.tell();
+  /** read the basic header of the vi file */
+  private readBaseHeader(reader: VirtualFile, offset: number): BaseViHeader | null {
+    reader.seek(offset);
+
     const identifier1 = reader.readAsciiString(6);
     const identifier2 = reader.readUInt16BE();
     const identifier3 = reader.readAsciiString(4);
     const identifier4 = reader.readAsciiString(4);
+    const rsrcOffset = reader.readUInt32BE();
+    const rsrcSize = reader.readUInt32BE();
+    const resourceListOffset = reader.tell();
 
     if (identifier1 !== 'RSRC\r\n') {
       ViHeader.logging.error('Wrong File Format: Unknown identifier1: ' + identifier1);
       return null;
     }
-
     if (identifier3 === 'LVAR') {
       ViHeader.logging.error('This program does not support .lvlib / LabView-LIB-files : wrong value for HeadIdentifier3: LVAR');
       return null;
@@ -132,8 +135,10 @@ export class ViHeader {
       identifier2,
       identifier3,
       identifier4,
-      rsrcOffset: reader.readUInt32BE(),
-      rsrcSize: reader.readUInt32BE()
+      rsrcOffset,
+      rsrcSize,
+      resourceListOffset: resourceListOffset
     };
   }
 }
+

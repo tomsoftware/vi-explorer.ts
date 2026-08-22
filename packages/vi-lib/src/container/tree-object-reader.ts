@@ -38,8 +38,8 @@ export class TreeObjectReader {
       dataLength = 0;
     }
 
-    const cRead = reader.getSubReader(containerOffset, containerLength);
-    const dRead = reader.getSubReader(dataOffset, dataLength);
+    const cRead = reader.createSubReader(containerOffset, containerLength);
+    const dRead = reader.createSubReader(dataOffset, dataLength);
 
     return [cRead, dRead];
   }

@@ -1,6 +1,7 @@
 import { VirtualFile } from '@tomsoftware/virtual-fs';
 import { Logger } from '@tomsoftware/logger';
 import { ViResourceContainer } from './vi-resource-container';
+import { ResourcesListHeader } from './vi-header';
 
 /** Every VI file contains a a list of resource containers/chunks */
 export class ViResources {
@@ -8,17 +9,16 @@ export class ViResources {
 
   public resources: ViResourceContainer[] = [];
 
-  constructor(reader: VirtualFile | null, dataReader: VirtualFile | null) {
-    Object.freeze(this);
+  constructor(reader: VirtualFile, resourcesHeader: ResourcesListHeader ) {
 
-    if ((reader == null) || (dataReader == null)) {
-      return;
-    }
-
-    reader.seek(0);
+    /** the resourceHeader points to a list of all resource in this file */
+    const resourceHeaderReader = reader.createSubReader(
+      resourcesHeader.resourceListOffset,
+      //resourcesHeader.resourceListSize
+    );
 
     // read number of resources
-    const count = reader.readUInt32BE() + 1;
+    const count = resourceHeaderReader.readUInt32BE() + 1;
     ViResources.logging.log('Found Resources: ' + count);
 
     if (count > 1000) {
@@ -28,7 +28,17 @@ export class ViResources {
 
     // read header of resources
     for (let i = 0; i < count; i++) {
-      this.resources.push(new ViResourceContainer(reader, dataReader));
+
+      // Read basic resource information
+      const name = resourceHeaderReader.readAsciiString(4);
+      const count = resourceHeaderReader.readUInt32BE() + 1;
+      // not sure about versions before 8.0
+      const headerOffset = resourceHeaderReader.readUInt32BE() + resourcesHeader.resourceListOffset;
+
+      // create resource container
+      this.resources.push(new ViResourceContainer(
+        reader, name, count, headerOffset, resourcesHeader.dataSetOffset
+      ));
     }
   }
 

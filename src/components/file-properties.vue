@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import type { VirtualFS } from '@tomsoftware/virtual-fs';
-import { ViFile } from '@tomsoftware/vi-lib';
+import { IconReader, ViFile } from '@tomsoftware/vi-lib';
 
 const props = defineProps<{ 
   fs: VirtualFS;
@@ -13,11 +13,10 @@ const emit = defineEmits<{
 }>();
 
 const size = ref<number | null>(null);
-const viInfo = ref<ViFile | null>(null);
+const img = ref<string | null>(null);
 
 async function loadFileProperties() {
   size.value = null
-  viInfo.value = null
 
   try {
     const vf = await props.fs.readFile(props.filePath)
@@ -26,7 +25,10 @@ async function loadFileProperties() {
       size.value = vf.length();
 
       try {
-        viInfo.value = new ViFile(vf);
+        const vi = new ViFile(vf);
+        const iconReader = new IconReader(vi);
+        const icon = iconReader.findIcon();
+        img.value = icon ? icon.generate() : null;
 
       } catch (e) {
 
@@ -55,8 +57,7 @@ function closeView() {
     <h2>Properties</h2>
     <p><strong>Path:</strong> {{ props.filePath }}</p>
     <p><strong>Size:</strong> {{ size ?? '—' }} bytes</p>
-    <p><strong>Name:</strong> {{ viInfo?.fileName }}</p>
-    
+    <img v-if="img" :src="img" />
 
     <div class="vi-info">
       <h3>VI Info</h3>

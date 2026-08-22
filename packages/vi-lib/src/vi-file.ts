@@ -18,17 +18,13 @@ export class ViFile {
     this.reader = reader;
     this.header = new ViHeader(this.reader);
 
-    this.read(this.header);
-  }
-
-  private read(header: ViHeader): boolean {
-    if (header.resourcesHeader == null) {
+    if (this.header.resourcesHeader == null) {
       ViFile.logging.error('No resource header found in file ' + this.reader.getFilename());
-      return false;
+      return;
     }
 
-    this.resources = new ViResources(header.getResourceHeaderReader(), header.getDataReader());
-
-    return true;
+    this.resources = new ViResources(reader, this.header.resourcesHeader);
   }
+
+ 
 }

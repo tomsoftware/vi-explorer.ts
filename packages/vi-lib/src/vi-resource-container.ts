@@ -2,6 +2,7 @@ import { BufferedFile, VirtualFile } from '@tomsoftware/virtual-fs';
 import { unzlibSync } from 'fflate';
 import { Logger } from '@tomsoftware/logger';
 
+/** A VI resource container is a basic container i a VI file  */
 export class ViResourceContainer {
   private static logging = new Logger('ViResourceContainer');
 
@@ -16,22 +17,23 @@ export class ViResourceContainer {
   public INT4: number;
   private reader: VirtualFile;
 
-  constructor(reader: VirtualFile, dataReader: VirtualFile) {
-    // Read basic resource information
-    this.name = reader.readAsciiString(4);
-    this.count = reader.readUInt32BE() + 1;
-    // not sure about versions before 8.0
-    this.headerOffset = reader.readUInt32BE();
+  constructor(reader: VirtualFile, name: string, count: number, headerOffset: number, dataSetOffset: number) {
+    this.name = name;
+    this.count = count;
+    this.headerOffset = headerOffset;
 
     // read resource data header
-    const headerReader = reader.getSubReader(this.headerOffset);
+    const headerReader = reader.createSubReader(headerOffset);
     this.INT1 = headerReader.readUInt32BE();
     this.INT2 = headerReader.readUInt32BE();
     this.INT3 = headerReader.readUInt32BE();
-    this.dataOffset = headerReader.readUInt32BE();
+    this.dataOffset = dataSetOffset + headerReader.readUInt32BE();
     this.INT4 = headerReader.readUInt32BE();
 
-    this.reader = dataReader.getSubReader(this.dataOffset);
+    ViResourceContainer.logging.log('Found container header "'+ name +'" at '+ headerOffset +' point to '+ this.dataOffset);
+
+    // unfortunately I do not know the size of the container
+    this.reader = reader.createSubReader(this.dataOffset, null, reader.getFilename() +':' + name);
 
     Object.seal(this);
   }
@@ -40,6 +42,7 @@ export class ViResourceContainer {
     return this.name === other;
   }
 
+  /** return a file read to the content of this resource */
   public getReader(useCompression = true, index = 0): VirtualFile | null {
     this.reader.seek(0);
     let offset = 0;
@@ -66,7 +69,7 @@ export class ViResourceContainer {
 
     if (!useCompression) {
       // return plain data
-      return this.reader.getSubReader(offset + 4, size);
+      return this.reader.createSubReader(offset + 4, size);
     }
 
     const unpackedSize = this.reader.readUInt32BE();

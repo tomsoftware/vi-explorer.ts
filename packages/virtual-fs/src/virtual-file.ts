@@ -39,11 +39,12 @@ export abstract class VirtualFile {
     }
    
     /** Create a new VirtualFile for the given sub buffer */
-    public getSubReader(offset: number, length?: number): VirtualFile {
+    public createSubReader(offset: number, length?: number | null, fileName?: string): VirtualFile {
         const fileLength = this.length();
         let data: Uint8Array;
 
-        length = length ?? fileLength;
+        length = length ?? (fileLength - offset);
+        fileName = fileName ?? this.fileName;
 
         if ((offset < 0) || (length < 0) || (offset + length) > fileLength) {
             VirtualFile.logger.error('Try to read out of buffer [from: {0}, length: {1}] in file "{2}"',
@@ -58,7 +59,7 @@ export abstract class VirtualFile {
             data = this.getBytes(offset, length);
         }
         
-        return new BufferedFile(data, this.fileName);
+        return new BufferedFile(data, fileName);
     }
 
     /** Read a unsigned little ending int32 from the file */
@@ -80,7 +81,7 @@ export abstract class VirtualFile {
         return (
             (bytes[0] << 24) |
             (bytes[1] << 16) |
-            (bytes[2] << 9) |
+            (bytes[2] << 8) |
             (bytes[3])
         ) >>> 0;;
     }
@@ -116,7 +117,7 @@ export abstract class VirtualFile {
 
     /** Read size-bytes from the file and return a new sub-file */
     public readBytesAsReader(size: number): VirtualFile {
-        const newFile = this.getSubReader(this.offset, size);
+        const newFile = this.createSubReader(this.offset, size);
         this.offset += newFile.length();;
         return newFile;
     }
