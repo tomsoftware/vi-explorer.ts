@@ -1,34 +1,28 @@
-
 import { Logger } from '@tomsoftware/logger';
 import { ViIcon } from './container/vi-icon';
-import { Icl8Icon } from './container/icl8-icon';
-import { Icl4Icon } from './container/icl4-icon';
+import { Icon8Bit } from './container/icon-8bit';
+import { Icon4Bit } from './container/icon-4bit';
 import { Icon1Bit } from './container/icon-1bit';
 import { ViFile } from './vi-file';
 
 export class IconReader {
   private static logging = new Logger('IconReader');
 
-  private icons: ViIcon[] = [];
+  private readonly icons: ViIcon[] = [];
 
   constructor(vi: ViFile) {
-    const resources = vi.resources;
-    if (resources == null) {
-      return;
-    }
-
     const iconTypes = [
-      ['icl8', Icl8Icon],
-      ['icl4', Icl4Icon],
+      ['icl8', Icon8Bit],
+      ['icl4', Icon4Bit],
       ['ICON', Icon1Bit],
     ] as const;
 
     for (const [name, IconClass] of iconTypes) {
-      if (!resources.resourceExists(name)) {
+      if (!vi.resources.resourceExists(name)) {
         continue;
       }
 
-      const container = resources.getResourceByName(name);
+      const container = vi.resources.getResourceByName(name);
       const reader = container?.getReader(false);
 
       if (!reader) {

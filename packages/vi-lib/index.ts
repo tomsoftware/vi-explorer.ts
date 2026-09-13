@@ -4,7 +4,9 @@ export * from './src/vi-resource-container';
 export * from './src/vi-resources';
 export * from './src/icon-reader';
 export * from './src/container/vi-icon';
-export * from './src/container/icl8-icon';
-export * from './src/container/icl4-icon';
+export * from './src/container/icon-8bit';
+export * from './src/container/icon-4bit';
 export * from './src/container/icon-1bit';
-
+export * from './src/vi-password';
+export * from './src/vi-save-record';
+export * from './src/vi-version';

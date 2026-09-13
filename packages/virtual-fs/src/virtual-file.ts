@@ -71,7 +71,7 @@ export abstract class VirtualFile {
             (bytes[1] << 8) |
             (bytes[2] << 16) |
             (bytes[3] << 24)
-        ) >>> 0;;
+        ) >>> 0;
     }
 
     /** Read a unsigned big ending int32 from the file */
@@ -83,7 +83,7 @@ export abstract class VirtualFile {
             (bytes[1] << 16) |
             (bytes[2] << 8) |
             (bytes[3])
-        ) >>> 0;;
+        ) >>> 0;
     }
 
 

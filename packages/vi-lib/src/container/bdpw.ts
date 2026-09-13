@@ -1,40 +1,28 @@
 import { Logger } from '@tomsoftware/logger';
-import { ViResources } from '../vi-resources';
-import { Tools } from '../tools';
+import { VirtualFile } from '@tomsoftware/virtual-fs';
+
 
 export class BDPW {
   private static logging = new Logger('BDPW');
 
-  private m_FileHasPassword = false;
-  private m_VCTP: any;
-  private m_VERS: any;
-  private m_reader: any;
-  private m_set_md5_psw = false;
-  private m_isHashReadOK = false;
-  private salt = '';
-  public passwordMd5 = '';
-  public hash1 = '';
-  public hash2 = '';
+  public passwordHash: Uint8Array;
+  public hash1: Uint8Array;
+  public hash2: Uint8Array;
 
-  constructor(lv: ViResources) {
-    this.m_FileHasPassword = true;
-    const reader = lv.getResourceByName('BDPW')?.getReader(false);
+
+  constructor(reader: VirtualFile | null) {
     if (reader == null) {
-      BDPW.logging.error('File has no password information! - Version < 5.0?');
-      return;
+        BDPW.logging.error('File has no password information! - Version < 5.0?');
+
+        this.passwordHash = new Uint8Array(0);
+        this.hash1 = new Uint8Array(0);
+        this.hash2 = new Uint8Array(0);
+        return;
     }
 
-    /*
-                this.m_VCTP = lv.getVCTP();
-                this.m_VCTP.getError().CopyErrorsTo(this.m_error);
-
-                this.m_VERS = lv.getVERS();
-                this.m_VERS.getError().CopyErrorsTo(this.m_error);
-        */
-
-    this.passwordMd5 = Tools.readHex(reader, 16);
-    this.hash1 = Tools.readHex(reader, 16);
-    this.hash2 = Tools.readHex(reader, 16);
+    this.passwordHash = reader.readBytes(16);
+    this.hash1 = reader.readBytes(16);
+    this.hash2 = reader.readBytes(16);
 
     /*
         this.m_set_md5_psw = this.m_file_psw.password_md5;

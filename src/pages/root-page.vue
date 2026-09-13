@@ -158,10 +158,9 @@ onMounted(async () => {
   >
     <div class="left">
       <header>
-        <h1>vi-explorer.ts — Browser</h1>
+        <h1>vi-explorer.ts - Browser</h1>
 
         <div class="toolbar">
-          <button type="button" @click="goUp" :disabled="!path">Up</button>
           <button type="button" @click="triggerInput('files')">Add Files</button>
           <button type="button" @click="triggerInput('folder')">Add Folder</button>
           <input data-role="files-input" type="file" multiple hidden @change="onFilesSelected" />
@@ -175,10 +174,17 @@ onMounted(async () => {
 
       <section class="list">
         <ul>
+
+          <li v-if="path" class="entry dir" @click="goUp()">
+            <span class="icon">📁</span>
+            <span class="name">..</span>
+            <span class="size">-</span>
+          </li>
+
           <li v-for="d in directories" :key="d" class="entry dir" @click="enterDirectory(d)">
             <span class="icon">📁</span>
             <span class="name">{{ d }}</span>
-            <span class="size">—</span>
+            <span class="size">-</span>
           </li>
           <li v-for="f in files" :key="f" class="entry file" @click="selectFile(f)">
             <span class="icon">📄</span>

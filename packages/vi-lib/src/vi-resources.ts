@@ -3,13 +3,17 @@ import { Logger } from '@tomsoftware/logger';
 import { ViResourceContainer } from './vi-resource-container';
 import { ResourcesListHeader } from './vi-header';
 
-/** Every VI file contains a a list of resource containers/chunks */
+/** Every VI file contains a list of resource containers/chunks */
 export class ViResources {
   private static logging = new Logger('ViResources');
 
-  public resources: ViResourceContainer[] = [];
+  public readonly resources: ViResourceContainer[] = [];
 
-  constructor(reader: VirtualFile, resourcesHeader: ResourcesListHeader ) {
+  constructor(reader: VirtualFile, resourcesHeader: ResourcesListHeader | null) {
+    if (resourcesHeader == null) {
+      ViResources.logging.error('No resource header found in file ' + reader.getFilename());
+      return;
+    }
 
     /** the resourceHeader points to a list of all resource in this file */
     const resourceHeaderReader = reader.createSubReader(

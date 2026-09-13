@@ -2,10 +2,8 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { HttpFileProvider, VirtualFile, VirtualFS } from '@tomsoftware/virtual-fs';
 import type { HexView } from '@tomsoftware/hex-view-control';
-import { ViFile, ViResourceContainer } from '@tomsoftware/vi-lib';
 
 const fs = new VirtualFS();
-const filesize = ref<number>(0);
 const hexView = ref<HexView | null>(null);
 const fileList = ref<string[]>([]);
 const filter = ref('');

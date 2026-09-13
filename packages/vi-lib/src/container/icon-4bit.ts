@@ -1,7 +1,8 @@
 import { VirtualFile } from '@tomsoftware/virtual-fs';
 import { ViIcon } from './vi-icon';
 
-export class Icl4Icon extends ViIcon {
+/** Read the "Icl4" chunk and convert it to a 32 bit image */
+export class Icon4Bit extends ViIcon {
   public static Color_Palette_16: number[] = [
     0xFFFFFF, 0xFFFF00, 0x000080, 0xFF0000, 0xFF00FF, 0x800080, 0x0000FF, 0x00FFFF,
     0x00FF00, 0x008000, 0x800000, 0x808000, 0xC0C0C0, 0x808080, 0x008080, 0x000000
@@ -26,7 +27,7 @@ export class Icl4Icon extends ViIcon {
     const count = this.width * this.height;
     const out = new Uint8ClampedArray(count * 4);
 
-    const pal = Icl4Icon.Color_Palette_16;
+    const pal = Icon4Bit.Color_Palette_16;
 
     let idx = 0;
     while (idx < count && !this.reader.eof()) {

@@ -1,5 +1,3 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
-
 export abstract class ViIcon {
   /** number of columns */
   public abstract width: number;
@@ -17,7 +15,9 @@ export abstract class ViIcon {
    */
   public generate(): string | null {
     const rgba = this.getRGBA();
-    if (!rgba) return null;
+    if (!rgba) {
+        return null;
+    }
 
     if (typeof document === 'undefined' || typeof document.createElement !== 'function') {
       return null;
@@ -27,10 +27,12 @@ export abstract class ViIcon {
     canvas.width = this.width;
     canvas.height = this.height;
     const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
+    if (!ctx) {
+        return null;
+    }
 
     // ImageData can be constructed directly from RGBA buffer
-    const imageData = new ImageData(rgba, this.width, this.height);
+    const imageData = new ImageData(new Uint8ClampedArray(rgba), this.width, this.height);
     ctx.putImageData(imageData, 0, 0);
     return canvas.toDataURL('image/png');
   }

@@ -1,8 +1,8 @@
 import { VirtualFile } from '@tomsoftware/virtual-fs';
 import { ViIcon } from './vi-icon';
 
+/** Read  the "ICON" chunk and convert to 32 bit image */
 export class Icon1Bit extends ViIcon {
-
   private reader: VirtualFile;
   public width = 32;
   public height = 32;

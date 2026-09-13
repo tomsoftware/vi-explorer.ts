@@ -1,7 +1,8 @@
 import { VirtualFile } from 'packages/virtual-fs';
 import { ViIcon } from './vi-icon';
 
-export class Icl8Icon extends ViIcon {
+/** Read the "Icl8" chunk and convert it to a 32 bit image */
+export class Icon8Bit extends ViIcon {
 
   private static ColorPalette256 = [
     0xF1F1F1, 0xFFFFCC, 0xFFFF99, 0xFFFF66, 0xFFFF33, 0xFFFF00, 0xFFCCFF, 0xFFCCCC, 0xFFCC99, 0xFFCC66, 0xFFCC33, 0xFFCC00, 0xFF99FF, 0xFF99CC, 0xFF9999, 0xFF9966,
@@ -37,7 +38,7 @@ export class Icl8Icon extends ViIcon {
     const count = this.width * this.height;
     const out = new Uint8ClampedArray(count * 4);
 
-    const pal: number[] = Icl8Icon.ColorPalette256;
+    const pal: number[] = Icon8Bit.ColorPalette256;
 
     for (let i = 0; i < count; i++) {
       if (this.reader.eof()) {

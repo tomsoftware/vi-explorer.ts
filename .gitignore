@@ -21,4 +21,10 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# build artifacts
 public/test-files/
+packages/logger/dist/
+packages/vi-lib/dist/
+packages/virtual-fs/dist/
+packages/hex-view-control/dist/
