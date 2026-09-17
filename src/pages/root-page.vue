@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import FileProperties from '../components/file-properties.vue';
-import ViFileView from './vi-file-view.vue';
 import { useRouter } from 'vue-router';
-import FSFactory from '../services/fs-factory';
 import { Logger } from '@tomsoftware/logger';
+import { LocalFileProvider, VirtualFS } from '@tomsoftware/virtual-fs';
+
+const props = defineProps<{
+  fsPromise: Promise<VirtualFS>;
+  localProvider: LocalFileProvider;
+}>();
+
 
 const logger = new Logger('root-page');
-const fsPromise = FSFactory.getInstance();
 const path = ref<string>('');
 const directories = ref<string[]>([]);
 const files = ref<string[]>([]);
@@ -26,7 +30,7 @@ function joinPath(base: string, name: string) {
 async function loadPath(p: string) {
   path.value = p;
 
-  const fs = await fsPromise;
+  const fs = await props.fsPromise;
 
   const dirList = fs.getDirectories(p)
   const fileList = fs.getFiles(p)
@@ -84,7 +88,7 @@ async function addLocalFiles(fileList: FileList | File[]) {
     return
   }
 
-  FSFactory.localProvider.addFiles(fileList);
+  props.localProvider.addFiles(fileList);
   await loadPath(path.value);
 }
 
@@ -202,11 +206,17 @@ function onOpenContainer(p: string) {
 
     <div class="right">
       <div v-if="showProperties && selectedFile">
-        <FileProperties :filePath="selectedFile" @open="onOpenFile" @open-container="onOpenContainer" @close="showProperties = false" />
+        <FileProperties
+          :filePath="selectedFile"
+          :fsPromise="fsPromise"
+          @open="onOpenFile"
+          @open-container="onOpenContainer"
+          @close="showProperties = false"
+        />
       </div>
 
       <div v-if="showViView && openPath">
-        <ViFileView :filePath="openPath" @close="closeViView" />
+        show the file
       </div>
 
       <div v-if="!showProperties && !showViView" class="placeholder">

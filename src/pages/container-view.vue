@@ -1,19 +1,22 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { ViFile, ViResourceContainer } from '@tomsoftware/vi-lib'
-import FSFactory from '../services/fs-factory'
+import { ref, onMounted } from 'vue';
+import { ViFile, ViResourceContainer } from '@tomsoftware/vi-lib';
 import ViResourceTable from '../components/vi-resource-table.vue';
+import { VirtualFS } from '@tomsoftware/virtual-fs';
 
-const props = defineProps<{ path: string }>()
+const props = defineProps<{
+  path: string;
+  fsPromise: Promise<VirtualFS>;
+}>();
 
-const vi = ref<ViFile | null>(null)
+const vi = ref<ViFile | null>(null);
 
 onMounted(async () => {
   if (!props.path) {
     return
   }
 
-  const fs = await FSFactory.getInstance();
+  const fs = await props.fsPromise;
   const vf = await fs.readFile(props.path);
   if (!vf) {
     return

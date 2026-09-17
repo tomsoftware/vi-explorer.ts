@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import FSFactory from '../services/fs-factory';
 import { IconReader, ViFile, ViPassword, ViSaveRecord } from '@tomsoftware/vi-lib';
 import ViResourceTable from './vi-resource-table.vue';
+import { VirtualFS } from '@tomsoftware/virtual-fs';
 
 const props = defineProps<{
   filePath: string;
+  fsPromise: Promise<VirtualFS>;
 }>();
+
 const emit = defineEmits<{
   (e: 'open', path: string): void
   (e: 'open-container', path: string): void
@@ -51,7 +53,7 @@ async function loadFileProperties() {
   size.value = null
 
   try {
-    const fs = await FSFactory.getInstance();
+    const fs = await props.fsPromise;
     const vf = await fs.readFile(props.filePath);
 
     if (!vf) {
