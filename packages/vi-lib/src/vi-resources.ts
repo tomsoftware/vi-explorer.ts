@@ -22,16 +22,16 @@ export class ViResources {
     );
 
     // read number of resources
-    const count = resourceHeaderReader.readUInt32BE() + 1;
-    ViResources.logging.log('Found Resources: ' + count);
+    const resourcesCount = resourceHeaderReader.readUInt32BE() + 1;
+    ViResources.logging.log('Found Resources: ' + resourcesCount);
 
-    if (count > 1000) {
+    if (resourcesCount > 1000) {
       ViResources.logging.error('Something is wrong! To many resources in file!');
       return;
     }
 
     // read header of resources
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < resourcesCount; i++) {
 
       // Read basic resource information
       const name = resourceHeaderReader.readAsciiString(4);

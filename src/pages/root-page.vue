@@ -78,11 +78,6 @@ function onOpenFile(p: string) {
   showProperties.value = false
 }
 
-function closeViView() {
-  showViView.value = false
-  openPath.value = null
-}
-
 async function addLocalFiles(fileList: FileList | File[]) {
   if (!fileList || fileList.length === 0) {
     return

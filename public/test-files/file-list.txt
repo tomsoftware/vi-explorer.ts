@@ -1,3 +1,0 @@
-simple-add.vi
-vi/empty.vi
-vi/one-wire.vi

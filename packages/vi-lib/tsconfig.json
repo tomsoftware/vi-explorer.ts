@@ -4,7 +4,10 @@
         "composite": true,
         "declaration": true,
         "outDir": "dist",
-        "baseUrl": "../..",
+        "paths": {
+            "@tomsoftware/logger": ["../../packages/logger/src"],
+            "@tomsoftware/virtual-fs": ["../../packages/virtual-fs/src"],
+        }
     },
     "include": ["src/**/*.ts", "index.ts"],
     "exclude": ["node_modules"]

@@ -4,7 +4,6 @@
         "composite": true,
         "declaration": true,
         "outDir": "dist",
-        "baseUrl": "../..",
     },
     "include": ["src/**/*.ts", "index.ts"],
     "exclude": ["node_modules"]

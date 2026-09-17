@@ -8,8 +8,8 @@ export interface BaseViHeader {
     resourceListOffset: number;
     /** magic of VI Vile */
     identifier1: string;
-    /** magic of VI Vile */
-    identifier2: number;
+    /** version of the file format of this VI Vile */
+    fileFormatVersion: number;
     /** magic of VI Vile */
     identifier3: string;
     /** magic of VI Vile */
@@ -105,7 +105,7 @@ export class ViHeader {
     reader.seek(offset);
 
     const identifier1 = reader.readAsciiString(6);
-    const identifier2 = reader.readUInt16BE();
+    const fileFormatVersion = reader.readUInt16BE();
     const identifier3 = reader.readAsciiString(4);
     const identifier4 = reader.readAsciiString(4);
     const rsrcOffset = reader.readUInt32BE();
@@ -132,7 +132,7 @@ export class ViHeader {
     return {
       offset,
       identifier1,
-      identifier2,
+      fileFormatVersion,
       identifier3,
       identifier4,
       rsrcOffset,
