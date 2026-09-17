@@ -1,13 +1,20 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, RouteLocationNormalizedGeneric } from 'vue-router'
 import RootPage from './pages/root-page.vue'
-import FileBrowser from './components/file-browser.vue'
-
-const routes = [
-  { path: '/', component: RootPage },
-  { path: '/browser', component: FileBrowser },
-]
+import ContainerView from './pages/container-view.vue'
 
 export const router = createRouter({
   history: createWebHistory(),
-  routes
-})
+  routes: [{ 
+    path: '/',
+    component: RootPage
+  },{ 
+    path: '/container-view',
+    name: 'container-view',
+    component: ContainerView,
+    props: (route: RouteLocationNormalizedGeneric) => ({
+       path: (route.query.path as string) ?? '',
+
+     })
+  },
+  ]
+});

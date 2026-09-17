@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import FileProperties from '../components/file-properties.vue'
-import ViFileView from './vi-file-view.vue'
-import { VirtualFS, HttpFileProvider, LocalFileProvider } from '@tomsoftware/virtual-fs'
+import { ref, onMounted } from 'vue';
+import FileProperties from '../components/file-properties.vue';
+import ViFileView from './vi-file-view.vue';
+import { useRouter } from 'vue-router';
+import FSFactory from '../services/fs-factory';
 import { Logger } from '@tomsoftware/logger';
 
 const logger = new Logger('root-page');
-const fs = new VirtualFS()
-const localProvider = new LocalFileProvider()
-const path = ref<string>('')
-const directories = ref<string[]>([])
-const files = ref<string[]>([])
-const fileSizes = ref<Record<string, number>>({})
-const selectedFile = ref<string | null>(null)
-const showProperties = ref(false)
-const showViView = ref(false)
-const openPath = ref<string | null>(null)
-const isDragging = ref(false)
+const fsPromise = FSFactory.getInstance();
+const path = ref<string>('');
+const directories = ref<string[]>([]);
+const files = ref<string[]>([]);
+const fileSizes = ref<Record<string, number>>({});
+const selectedFile = ref<string | null>(null);
+const showProperties = ref(false);
+const showViView = ref(false);
+const openPath = ref<string | null>(null);
+const isDragging = ref(false);
 
 function joinPath(base: string, name: string) {
   if (!base) return name
@@ -24,7 +24,10 @@ function joinPath(base: string, name: string) {
 }
 
 async function loadPath(p: string) {
-  path.value = p
+  path.value = p;
+
+  const fs = await fsPromise;
+
   const dirList = fs.getDirectories(p)
   const fileList = fs.getFiles(p)
   directories.value = dirList || []
@@ -81,7 +84,7 @@ async function addLocalFiles(fileList: FileList | File[]) {
     return
   }
 
-  localProvider.addFiles(fileList);
+  FSFactory.localProvider.addFiles(fileList);
   await loadPath(path.value);
 }
 
@@ -140,12 +143,14 @@ async function onDrop(event: DragEvent) {
 }
 
 onMounted(async () => {
-  fs.registerFileProvider(localProvider);
-
-  const httpProvider = await HttpFileProvider.fromUrlList('test-files/', 'file-list.txt')
-  fs.registerFileProvider(httpProvider)
-  await loadPath('')
+  await loadPath('');
 })
+
+const router = useRouter();
+
+function onOpenContainer(p: string) {
+  router.push({ name: 'container-view', query: { path: p } });
+}
 </script>
 
 <template>
@@ -197,11 +202,11 @@ onMounted(async () => {
 
     <div class="right">
       <div v-if="showProperties && selectedFile">
-        <FileProperties :fs="fs" :filePath="selectedFile" @open="onOpenFile" @close="showProperties = false" />
+        <FileProperties :filePath="selectedFile" @open="onOpenFile" @open-container="onOpenContainer" @close="showProperties = false" />
       </div>
 
       <div v-if="showViView && openPath">
-        <ViFileView :fs="fs" :filePath="openPath" @close="closeViView" />
+        <ViFileView :filePath="openPath" @close="closeViView" />
       </div>
 
       <div v-if="!showProperties && !showViView" class="placeholder">

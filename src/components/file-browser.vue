@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
-import { HttpFileProvider, VirtualFile, VirtualFS } from '@tomsoftware/virtual-fs';
+import { HttpFileProvider, VirtualFile } from '@tomsoftware/virtual-fs';
+import FSFactory from '../services/fs-factory'
 import type { HexView } from '@tomsoftware/hex-view-control';
 
-const fs = new VirtualFS();
+const fs = FSFactory.getInstance();
 const hexView = ref<HexView | null>(null);
 const fileList = ref<string[]>([]);
 const filter = ref('');

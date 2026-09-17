@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import type { VirtualFS } from '@tomsoftware/virtual-fs';
+import FSFactory from '../services/fs-factory';
 import { IconReader, ViFile, ViPassword, ViSaveRecord } from '@tomsoftware/vi-lib';
+import ViResourceTable from './vi-resource-table.vue';
 
 const props = defineProps<{
-  fs: VirtualFS;
   filePath: string;
 }>();
 const emit = defineEmits<{
   (e: 'open', path: string): void
+  (e: 'open-container', path: string): void
   (e: 'close'): void
 }>();
 
@@ -17,6 +18,8 @@ const img = ref<string | null>(null);
 const passwordHash = ref<string>('');
 const version = ref<string>('');
 const libPasswordHash = ref<string>('');
+const vi = ref<ViFile | null>(null);
+const description = ref<string>('');
 
 /** Read and convert the icon from the VI */
 function getIconImage(vi: ViFile): string | null {
@@ -48,20 +51,23 @@ async function loadFileProperties() {
   size.value = null
 
   try {
-    const vf = await props.fs.readFile(props.filePath)
+    const fs = await FSFactory.getInstance();
+    const vf = await fs.readFile(props.filePath);
 
     if (!vf) {
       return;
     }
 
-    const vi = new ViFile(vf);
+    const viFile = new ViFile(vf);
+    vi.value = viFile;
 
     size.value = vf.length();
-    img.value = getIconImage(vi);
-    passwordHash.value = getPasswordInfo(vi);
+    description.value = viFile.getStringDescription().description;
+    img.value = getIconImage(viFile);
+    passwordHash.value = getPasswordInfo(viFile);
 
     /** read the file version of the VI */
-    const lvsr = new ViSaveRecord(vi);
+    const lvsr = new ViSaveRecord(viFile);
     version.value = lvsr.fileVersion.toString() ;
     if (lvsr.fileHasLibraryPassword) {
       libPasswordHash.value = lvsr.libraryPasswordHashHex;
@@ -84,6 +90,10 @@ function openFile() {
   emit('open', props.filePath)
 }
 
+function openContainerView() {
+  emit('open-container', props.filePath)
+}
+
 function closeView() {
   emit('close')
 }
@@ -98,23 +108,34 @@ function closeView() {
 
     <h3>VI Info</h3>
     <div class="vi-info">
+
+      <p><strong>Description: </strong>{{ description }}</p>
+      <p><strong>LabView Version: </strong>{{ version }}</p>
+
       <p>
-        <strong>Password:</strong> <i v-if="passwordHash === ''">not set</i>
+        <strong>Password: </strong>
+        <i v-if="passwordHash === ''">not set</i>
         <span v-else>{{ passwordHash }}</span>
       </p>
 
       <p>
-        <strong>Library Password:</strong> <i v-if="libPasswordHash === ''">not set</i>
+        <strong>Library Password: </strong>
+        <i v-if="libPasswordHash === ''">not set</i>
         <span v-else>{{ libPasswordHash }}</span>
       </p>
 
-      <p><strong>LabView Version:</strong> {{ version }}</p>
     </div>
 
     <div class="actions">
       <button @click="openFile">Open</button>
+      <button @click="openContainerView">Open Container View</button>
       <button @click="closeView">Close</button>
     </div>
+
+    <ViResourceTable
+      v-if="vi"
+      :vi="vi as unknown as ViFile"
+    />
   </div>
 </template>
 
