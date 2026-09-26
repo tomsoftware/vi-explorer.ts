@@ -1,0 +1,3 @@
+simple-add.vi
+test/other.vi
+

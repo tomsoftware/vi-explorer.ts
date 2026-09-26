@@ -3,8 +3,7 @@
     "compilerOptions": {
         "composite": true,
         "declaration": true,
-        "outDir": "dist",
-        "baseUrl": "../..",
+        "outDir": "dist"
     },
     "include": ["src/**/*.ts", "index.ts"],
     "exclude": ["node_modules"]

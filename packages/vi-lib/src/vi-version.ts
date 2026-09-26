@@ -47,6 +47,35 @@ export class ViVersion {
            ((this.versionNumber >>> 24) & 0x0f);
   }
 
+  /**
+   * Compares this version with the specified major and optional minor version.
+   * Returns:
+   *  1 if this version is greater,
+   * -1 if it is smaller,
+   *  or 0 if the compared versions are equal
+  */
+  public compareTo(major: number, minor?: number): number {
+    if (this.major > major) {
+      return 1;
+    }
+    if (this.major < major) {
+      return -1;
+    }
+
+    // this.major == major
+    if (minor == null) {
+      return 0;
+    }
+
+    if (this.minor > minor) {
+      return 1;
+    }
+    if (this.minor < minor) {
+      return -1;
+    }
+    return 0;
+  }
+
   public toString(): string {
     return `${this.major}.${this.minor}.${this.bugfix} (${this.stageText} ${this.build})`;
   }

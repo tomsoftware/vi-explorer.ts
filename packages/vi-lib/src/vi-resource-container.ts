@@ -16,6 +16,8 @@ export class ViResourceContainer {
   public dataOffset: number;
   public INT4: number;
   private reader: VirtualFile;
+  /** size of first container */
+  public firstSize: number;
 
   constructor(reader: VirtualFile, name: string, count: number, headerOffset: number, dataSetOffset: number) {
     this.name = name;
@@ -35,7 +37,44 @@ export class ViResourceContainer {
     // unfortunately I do not know the size of the container
     this.reader = reader.createSubReader(this.dataOffset, null, reader.getFilename() +':' + name);
 
+    const firstPart = ViResourceContainer.getPartOffset(this.reader, 0);
+    this.firstSize = firstPart.size;
+
     Object.seal(this);
+  }
+
+  /** returns the full size of this container with all parts and part-headers */
+  public calculateContainerSize(reader: VirtualFile, count: number): number {
+    const lastPart = ViResourceContainer.getPartOffset(reader, count - 1);
+    return lastPart.nextOffset;
+  }
+
+  private static getPartOffset(reader: VirtualFile, index: number): {offset: number, size: number, nextOffset: number} {
+    let offset = 0;
+    let nextOffset = 0;
+    let size = 0;
+
+    if (index < 0) {
+      return {offset: 0, size: 0, nextOffset: 0};
+    }
+
+    // Jump over other blocks
+    for (let i = 0; i <= index && !reader.eof(); i++) {
+      offset = nextOffset;
+      reader.seek(offset);
+
+      size = reader.readUInt32BE();
+
+      nextOffset += size;
+
+      // add 4 bytes for size-value
+      nextOffset += 4;
+
+      // pad the size 4 Bytes
+      nextOffset = (nextOffset + 3) & ~0x03;
+    }
+
+    return {offset: (offset + 4), size, nextOffset};
   }
 
   public compareName(other: string): boolean {
@@ -44,39 +83,23 @@ export class ViResourceContainer {
 
   /** return a file read to the content of this resource */
   public getReader(useCompression = true, index = 0): VirtualFile | null {
-    this.reader.seek(0);
-    let offset = 0;
-
-    for (let i = 0; i < index && !this.reader.eof(); i++) {
-      this.reader.seek(offset);
-      const size = this.reader.readUInt32BE();
-      offset += size;
-
-      // pad the size 4 Bytes
-      offset += (offset + 3) & 0x03;
-
-      // add 4 bytes for size-value
-      offset += 4;
-    }
+    const partInfo = ViResourceContainer.getPartOffset(this.reader, index);
 
     if (this.reader.eof()) {
       ViResourceContainer.logging.error('Unable to get data for resource ' + this.name + ' with index: ' + index);
       return null;
     }
 
-    this.reader.seek(offset);
-    const size = this.reader.readUInt32BE();
-
     if (!useCompression) {
       // return plain data
-      return this.reader.createSubReader(offset + 4, size);
+      return this.reader.createSubReader(partInfo.offset, partInfo.size);
     }
 
     const unpackedSize = this.reader.readUInt32BE();
 
     // decompress
-    this.reader.seek(offset + 8);
-    const buffer = this.reader.readBytes(size - 4);
+    this.reader.seek(partInfo.offset + 4);
+    const buffer = this.reader.readBytes(partInfo.size - 4);
 
     let result: Uint8Array;
     try {

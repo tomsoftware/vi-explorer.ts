@@ -23,6 +23,11 @@ export abstract class VirtualFile {
 
     public abstract clone(): VirtualFile;
 
+    /** Returns the number of bytes left in this buffer */
+    public leftLength(): number {
+        return Math.max(0, (this.length() - this.offset));
+    }
+
     /** clamp the input to the maximum possible range this file can provide */
     private clampRange(offset: number, length: number) {
         const fileLength = this.length();

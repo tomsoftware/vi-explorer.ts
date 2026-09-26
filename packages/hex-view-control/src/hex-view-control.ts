@@ -1,7 +1,7 @@
 import { DownloadHelper } from "./download-helper";
 
 export class HexView extends HTMLElement {
-  private data: Uint8Array = new Uint8Array();
+  private data: Uint8Array = new Uint8Array(0);
   private fileName?: string;
   private bytesPerRow = 16;
   private rowHeight = 18; // font size dependent
@@ -23,10 +23,23 @@ export class HexView extends HTMLElement {
     this.data = data;
     this.fileName = fileName;
 
-    this.shadowRoot.getElementById('title')!.innerText = fileName;
-    this.shadowRoot.getElementById('size')!.innerText = data.length.toString();
+    this.updateElement('title', fileName);
+    this.updateElement('size', data.length.toString());
 
     this.update();
+  }
+
+  private updateElement(elementId: string, newValue?: string) {
+    if (this.shadowRoot == null) {
+      return;
+    }
+
+    const element = this.shadowRoot.getElementById(elementId);
+    if (element == null) {
+      return;
+    }
+
+    element.innerText = newValue ?? '';
   }
 
   private renderBase() {
@@ -173,7 +186,11 @@ export class HexView extends HTMLElement {
   }
 
   private updatePosition() {
-    const positionDisplay = this.shadowRoot?.getElementById('position');
+    if (this.shadowRoot == null) {
+      return;
+    }
+
+    const positionDisplay = this.shadowRoot.getElementById('position');
     if (positionDisplay == null) {
       return;
     }

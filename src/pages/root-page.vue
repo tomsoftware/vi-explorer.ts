@@ -32,55 +32,57 @@ async function loadPath(p: string) {
 
   const fs = await props.fsPromise;
 
-  const dirList = fs.getDirectories(p)
-  const fileList = fs.getFiles(p)
-  directories.value = dirList || []
-  files.value = fileList || []
+  const dirList = fs.getDirectories(p);
+  const fileList = fs.getFiles(p);
+  directories.value = dirList || [];
+  files.value = fileList || [];
 
   const sizes: Record<string, number> = {}
   for (const f of files.value) {
     try {
-      const vf = await fs.readFile(joinPath(p, f))
+      const vf = await fs.readFile(joinPath(p, f));
       sizes[f] = vf ? vf.length() : 0
     } catch(e) {
       logger.error('Fail to read files', e);
-      sizes[f] = 0
+      sizes[f] = 0;
     }
   }
-  fileSizes.value = sizes
-  selectedFile.value = null
-  showProperties.value = false
-  showViView.value = false
+  fileSizes.value = sizes;
+  selectedFile.value = null;
+  showProperties.value = false;
+  showViView.value = false;
 }
 
 function enterDirectory(name: string) {
-  const nextPath = joinPath(path.value, name)
-  loadPath(nextPath)
+  const nextPath = joinPath(path.value, name);
+  loadPath(nextPath);
 }
 
 function goUp() {
-  if (!path.value) return
-  const parts = path.value.split('/')
-  parts.pop()
-  const nextPath = parts.join('/')
-  loadPath(nextPath)
+  if (!path.value) {
+    return;
+  }
+  const parts = path.value.split('/');
+  parts.pop();
+  const nextPath = parts.join('/');
+  loadPath(nextPath);
 }
 
 function selectFile(name: string) {
-  selectedFile.value = joinPath(path.value, name)
-  showProperties.value = true
-  showViView.value = false
+  selectedFile.value = joinPath(path.value, name);
+  showProperties.value = true;
+  showViView.value = false;
 }
 
 function onOpenFile(p: string) {
-  openPath.value = p
-  showViView.value = true
-  showProperties.value = false
+  openPath.value = p;
+  showViView.value = true;
+  showProperties.value = false;
 }
 
 async function addLocalFiles(fileList: FileList | File[]) {
   if (!fileList || fileList.length === 0) {
-    return
+    return;
   }
 
   props.localProvider.addFiles(fileList);
@@ -88,29 +90,29 @@ async function addLocalFiles(fileList: FileList | File[]) {
 }
 
 function triggerInput(inputName: 'files' | 'folder') {
-  const selector = inputName === 'files' ? 'input[data-role=files-input]' : 'input[data-role=folder-input]'
-  const input = document.querySelector(selector) as HTMLInputElement | null
-  input?.click()
+  const selector = inputName === 'files' ? 'input[data-role=files-input]' : 'input[data-role=folder-input]';
+  const input = document.querySelector(selector) as HTMLInputElement | null;
+  input?.click();
 }
 
 function onFilesSelected(event: Event) {
-  const input = event.target as HTMLInputElement
+  const input = event.target as HTMLInputElement;
   if (!input.files) {
-    return
+    return;
   }
 
-  void addLocalFiles(input.files)
-  input.value = ''
+  void addLocalFiles(input.files);
+  input.value = '';
 }
 
 function onFolderSelected(event: Event) {
-  const input = event.target as HTMLInputElement
+  const input = event.target as HTMLInputElement;
   if (!input.files) {
-    return
+    return;
   }
 
-  void addLocalFiles(input.files)
-  input.value = ''
+  void addLocalFiles(input.files);
+  input.value = '';
 }
 
 function onDragOver(event: DragEvent) {
@@ -130,15 +132,15 @@ function onDragLeave(event: DragEvent) {
 }
 
 async function onDrop(event: DragEvent) {
-  event.preventDefault()
-  isDragging.value = false
+  event.preventDefault();
+  isDragging.value = false;
 
-  const files = event.dataTransfer?.files
+  const files = event.dataTransfer?.files;
   if (!files || files.length === 0) {
-    return
+    return;
   }
 
-  await addLocalFiles(files)
+  await addLocalFiles(files);
 }
 
 onMounted(async () => {

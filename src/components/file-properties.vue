@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { IconReader, ViFile, ViPassword, ViSaveRecord } from '@tomsoftware/vi-lib';
+import { IconReader, LIVI, ViFile, ViPassword, ViSaveRecord } from '@tomsoftware/vi-lib';
 import ViResourceTable from './vi-resource-table.vue';
 import { VirtualFS } from '@tomsoftware/virtual-fs';
 
@@ -48,6 +48,12 @@ function getPasswordInfo(vi: ViFile) {
   return '';
 }
 
+function getLIvi(vi: ViFile) {
+  const container = vi.resources.getResourceByName('LIvi');
+  const reader = container?.getReader(false) ?? null;
+  const livi = new LIVI(reader, vi.version);
+}
+
 /** Read / process all properties from VI */
 async function loadFileProperties() {
   size.value = null
@@ -68,9 +74,10 @@ async function loadFileProperties() {
     img.value = getIconImage(viFile);
     passwordHash.value = getPasswordInfo(viFile);
 
+
+    const lvsr = viFile.getSaveRecord();
     /** read the file version of the VI */
-    const lvsr = new ViSaveRecord(viFile);
-    version.value = lvsr.fileVersion.toString() ;
+    version.value = viFile.version.toString();
     if (lvsr.fileHasLibraryPassword) {
       libPasswordHash.value = lvsr.libraryPasswordHashHex;
     }
@@ -78,6 +85,9 @@ async function loadFileProperties() {
       libPasswordHash.value = '';
     }
     
+    /** test */
+    getLIvi(viFile);
+
 
   } catch (e) {
     console.error(e);

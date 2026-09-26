@@ -36,6 +36,7 @@ function selectContainer(c: ViResourceContainer, idx: number) {
         <tr>
           <th>Name</th>
           <th>Count</th>
+          <th>Size</th>
           <th>Header Offset</th>
           <th>Data Offset</th>
           <th>INT1</th>
@@ -53,6 +54,7 @@ function selectContainer(c: ViResourceContainer, idx: number) {
         >
           <td>{{ container.name }}</td>
           <td>{{ formatNumber(container.count) }}</td>
+          <td>{{ formatNumber(container.firstSize) }}</td>
           <td>{{ formatNumber(container.headerOffset) }}</td>
           <td>{{ formatNumber(container.dataOffset) }}</td>
           <td>{{ formatNumber(container.INT1) }}</td>
