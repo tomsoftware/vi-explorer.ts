@@ -14,15 +14,13 @@ export abstract class TypedLinkSaveInfoBase extends LinkSaveInfoBasic {
 
 
   public typedLinkTD: TypedLinkTarget | null = null;
-  public viLinkFieldA = 0;
+  public viLinkUnknown1 = 0;
   public viLinkLibVersion = 0;
-  public viLinkField4 = 0;
-  public viLinkFieldB: Uint8Array = new Uint8Array(0);
-  public viLinkFieldC: Uint8Array = new Uint8Array(0);
-  public viLinkFieldD = 0;
+  public viLinkUnknown2 = 0;
+  public viLinkUnknown3 = 0;
+  public viLinkUnknown4 = 0;
+  public viLinkUnknown5 = 0;
   public typedLinkFlags = 0;
-  
-
 
   protected parseVILinkRefInfo(reader: VirtualFile, version: ViVersion) {
     let flagBt = 0xff;
@@ -31,20 +29,20 @@ export abstract class TypedLinkSaveInfoBase extends LinkSaveInfoBasic {
     }
 
     if (flagBt !== 0xff) {
-      this.viLinkFieldA = flagBt & 0x01;
+      this.viLinkUnknown1 = flagBt & 0x01;
       this.viLinkLibVersion = (flagBt >> 1) & 0x1f;
-      this.viLinkField4 = flagBt >> 6;
+      this.viLinkUnknown2 = flagBt >> 6;
     }
     else {
       if (version.compareTo(8, 0) >= 0) {
-        this.viLinkField4 = reader.readUInt32BE();
+        this.viLinkUnknown2 = reader.readUInt32BE();
         this.viLinkLibVersion = reader.readUInt32BE();
       }
 
       if (version.compareTo(6, 0) >= 0) {
-        this.viLinkFieldB = reader.readBytes(4);
-        this.viLinkFieldC = reader.readBytes(4);
-        this.viLinkFieldD = reader.readUInt32BE();
+        this.viLinkUnknown3 = reader.readUInt32BE();
+        this.viLinkUnknown4 = reader.readUInt32BE();
+        this.viLinkUnknown5 = reader.readUInt32BE();
       }
     }
 
@@ -59,16 +57,16 @@ export abstract class TypedLinkSaveInfoBase extends LinkSaveInfoBasic {
         index: this.readVariableSizeFieldU2p2(reader),
         flags: 0,
       };
+
       this.parseVILinkRefInfo(reader, version)
 
-    if (version.compareTo(12, 0) >= 0) {
-      this.typedLinkFlags = reader.readUInt32BE();
-    }
+      if (version.compareTo(12, 0) >= 0) {
+        this.typedLinkFlags = reader.readUInt32BE();
+      }
     }
     else {
       TypedLinkSaveInfoBase.loggerTypedLink.error('Unable to parse: parseTypedLinkSaveInfo - Not supported Version!');
     }
   }
-
 
 }

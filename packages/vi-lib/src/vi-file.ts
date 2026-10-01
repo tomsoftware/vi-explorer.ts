@@ -5,6 +5,8 @@ import { ViResources } from './vi-resources';
 import { STRG } from './container/strg';
 import { ViVersion } from './vi-version';
 import { ViSaveRecord } from './vi-save-record';
+import { VCTP } from './container/vctp';
+import { LinkedObjectContainer } from './container/linked-object-container';
 
 export class ViFile {
   private static logging = new Logger('ViFile');
@@ -40,6 +42,42 @@ export class ViFile {
 
   public getSaveRecord() {
     return this.viSaveRecord;
-  } 
+  }
+
+  /** Returns Dependency information */
+  public getLIvi() {
+    const container = this.resources.getResourceByName('LIvi');
+    const reader = container?.getReader(false) ?? null;
+    return new LinkedObjectContainer(reader, this.version);
+  }
+
+  /** Returns */
+  public getLIds() {
+    const container = this.resources.getResourceByName('LIds');
+    const reader = container?.getReader(false) ?? null;
+    return new LinkedObjectContainer(reader, this.version);
+  }
+
+  /** Returns */
+  public getLIfp() {
+    const container = this.resources.getResourceByName('LIfp');
+    const reader = container?.getReader(false) ?? null;
+    return new LinkedObjectContainer(reader, this.version);
+  }
+
+  /** Returns */
+  public getLIbd() {
+    const container = this.resources.getResourceByName('LIbd');
+    const reader = container?.getReader(false) ?? null;
+    return new LinkedObjectContainer(reader, this.version);
+  }
+
+
+  /** Returns VCTP "VI Consolidated Types" container */
+  public getVCTP(): VCTP {
+    const container = this.resources.getResourceByName('VCTP');
+    const reader = container?.getReader(true) ?? null;
+    return new VCTP(reader, this.version);
+  }
 
 }

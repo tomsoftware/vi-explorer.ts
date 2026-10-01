@@ -1,7 +1,9 @@
 import { LinkObjectFactory } from './link-object-factory';
+import { IUVI } from './object-types/iuvi';
 import { LVIN } from './object-types/lvin';
 import { PICT } from './object-types/pict';
 import { PTH0 } from './object-types/pth0';
+import { TDCC } from './object-types/tdcc';
 import { VICC } from './object-types/vicc';
 import { VILB } from './object-types/vilb';
 import { VIPI } from './object-types/vipi';
@@ -22,5 +24,9 @@ export function registerParsers(): void {
   LinkObjectFactory.registerType(VILB);
   LinkObjectFactory.registerType(VIVI);
   LinkObjectFactory.registerType(VIPI);
+  LinkObjectFactory.registerType(TDCC);
+  LinkObjectFactory.registerType(IUVI);
+  
+  
   
 }

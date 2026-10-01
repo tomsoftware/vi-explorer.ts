@@ -4,8 +4,8 @@ import { ViVersion } from '../vi-version';
 
 export class ObjectContainerHeader extends LinkObjectBase {
 
-  private unknown1: string | null = null;
-  private unknown2: Uint8Array = new Uint8Array(0);
+  public unknown1: string | null = null;
+  public unknown2: Uint8Array = new Uint8Array(0);
 
   public parseContainer(reader: VirtualFile, version: ViVersion) {
     this.unknown1 = this.readBytePrefixedString(reader);

@@ -10,7 +10,8 @@ export * from './src/container/icon-1bit';
 export * from './src/vi-password';
 export * from './src/vi-save-record';
 export * from './src/vi-version';
-export * from './src/container/livi';
+export * from './src/container/linked-object-container';
+export * from './src/container/vctp';
 
 export * from './src/link-obj-refs/link-object-factory';
 export * from './src/link-obj-refs/object-types/lvin';

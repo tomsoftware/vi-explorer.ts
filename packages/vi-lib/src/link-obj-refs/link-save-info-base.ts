@@ -25,7 +25,6 @@ export abstract class LinkSaveInfoBasic extends LinkObjectBase {
       return items;
     }
 
-
     for (let i = 0; i < count; i++) {
       const length = reader.readByte();
       items.push(reader.readAsciiString(length));
@@ -39,6 +38,7 @@ export abstract class LinkSaveInfoBasic extends LinkObjectBase {
 
     const parser = LinkObjectFactory.create(ident);
     if (parser == null) {
+      LinkSaveInfoBasic.loggerLinkSave.error('Unable to parse PathRef - Unknown Identity-Tag: ' + ident + ' in ' + reader.getFilename());
       return null;
     }
 

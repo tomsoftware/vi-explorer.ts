@@ -19,11 +19,11 @@ export class LinkObjectContainerParser {
   }
 
   /** parses a given file and returns a list of objects */
-  public parse(reader: VirtualFile | null): Array<LinkObjectBase> {
-    let count = 0;
-    const objs: Array<LinkObjectBase> = [];
+  public parse(reader: VirtualFile | null) : {header: LinkObjectBase | null, objects: LinkObjectBase[]} {
+    let header: LinkObjectBase | null = null;
+    const objects: Array<LinkObjectBase> = [];
     if (reader == null) {
-        return objs;
+        return { header, objects }
     }
 
     LinkObjectContainerParser.logging.log('Parsing ' + reader.getFilename())
@@ -32,22 +32,16 @@ export class LinkObjectContainerParser {
     let nextLinkInfo = reader.readUInt16BE();
     if (nextLinkInfo != 1) {
       LinkObjectContainerParser.logging.error('Expect root object link info! Got: (' + nextLinkInfo + ' != 1) in file: '+ reader.getFilename());
-      return objs;
+      return { header, objects };
     }
 
     let ident = reader.readAsciiString(4);
     if (this.version.compareTo(14,0) < 0) {
-      const header = new ObjectContainerHeader(ident);
+      header = new ObjectContainerHeader(ident);
       header.parseContainer(reader, this.version);
-      objs.push(header);
+    }
 
-      // we add the header also to the output
-      count = reader.readUInt32BE() + 1;
-    }
-    else {
-      count = reader.readUInt32BE();
-    }
-    
+    const count = reader.readUInt32BE();
 
     // read each item in the container
     while (true) {
@@ -79,13 +73,16 @@ export class LinkObjectContainerParser {
       obj.parseContainer(reader, this.version);
 
       // add new object to results
-      objs.push(obj)
+      objects.push(obj)
     }
 
-    if (count != objs.length) {
-      LinkObjectContainerParser.logging.error('Length mismatch ' + count + ' != ' + objs.length + ' when parsing parsing container!');
+    if (count != objects.length) {
+      LinkObjectContainerParser.logging.error('Length mismatch '
+        + count + ' != ' + objects.length
+        + ' when parsing parsing container!'
+      );
     }
 
-    return objs;
+    return { header, objects }
   }
 }

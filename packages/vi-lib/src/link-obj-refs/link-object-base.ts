@@ -1,8 +1,10 @@
 import { VirtualFile } from '@tomsoftware/virtual-fs';
 import { ViVersion } from '../vi-version';
+import { Logger } from '@tomsoftware/logger';
 
 /** Abstract base class for all Link-Objects */
 export abstract class LinkObjectBase {
+  private static baseLogging = new Logger('LinkObjectBase');
   public tag: string;
 
   constructor(tag: string) {
@@ -38,6 +40,10 @@ export abstract class LinkObjectBase {
     /** read a string prefixed with is 4 byte size */
   protected readIntPrefixedString(reader: VirtualFile) {
     const strLen = reader.readUInt32BE();
+    if (strLen >= reader.leftLength()) {
+      LinkObjectBase.baseLogging.error('Size of string is to big! ' + strLen + ' ' + reader.getFilename());
+      return '';
+    }
     return reader.readAsciiString(strLen);
   }
 
