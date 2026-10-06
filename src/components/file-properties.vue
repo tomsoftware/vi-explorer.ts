@@ -88,6 +88,8 @@ async function loadFileProperties() {
     */
     const v = viFile.getVCTP();
     console.trace(v);
+    const xml = v.toXml();
+    console.trace(xml);
   } catch (e) {
     console.error(e);
   }

@@ -1,15 +1,15 @@
-# StormLib.ts
+# vi-lib
 
-TypeScript Library for low level reading LabView vi files.
-
-
-## Acknowledgement
-
-This project is based on work of **StormLib** by *ladislav-zezula*.
-Original project: https://github.com/ladislav-zezula/StormLib
+A TypeScript library for reading and parsing LabVIEW VI files.
 
 
-## Legacy & Copyright
+## Acknowledgements
 
-*LabView*, including all names, assets, and intellectual property, is fully owned by *National Instruments*.
-This project is an independent fan-made and is not affiliated with, endorsed by, or supported by *National Instruments*.
+This project is based on my PHP-based *vi-explorer* and builds upon the work of *mefistotelis* and his [*pylabview*](https://github.com/mefistotelis/pylabview) project. 
+
+
+## Disclaimer
+
+*LabVIEW*, including all names, assets, and intellectual property, is fully owned by *National Instruments*.
+
+This project is an independent, hobby project and is not affiliated with, endorsed by, or supported by *National Instruments*.
