@@ -1,12 +1,12 @@
-import { VirtualFile } from "@tomsoftware/virtual-fs";
-import { VCTPObjectBase } from "./vctp-object-base";
-import { ViVersion } from "../vi-version";
-import { VCTPClientRef } from "./vctp-client-ref";
-import { VCTPAttributeType } from "./vctp-attribute-type";
+import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { TypeGroup, VCTPObjectBase } from './vctp-object-base';
+import { ViVersion } from '../vi-version';
+import { VCTPClientRef } from './vctp-client-ref';
+import { VCTPAttributeType } from './vctp-attribute-type';
 
 export class VCTPObjectTerminal extends VCTPObjectBase {
-  public parse(reader: VirtualFile, version: ViVersion) {
 
+  public parse(reader: VirtualFile, version: ViVersion) {
     const count = reader.readUInt16BE();
     if (count > 125) {
       VCTPObjectBase.logging.error(`Terminal count > 124 @ ${this.offset}`);
@@ -32,5 +32,9 @@ export class VCTPObjectTerminal extends VCTPObjectBase {
     }
 
     this.paresLabel(reader);
+  }
+
+  public get getTypeGroup(): TypeGroup {
+    return TypeGroup.Unknown;
   }
 }

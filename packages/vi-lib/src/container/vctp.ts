@@ -1,8 +1,10 @@
 import { Logger } from '@tomsoftware/logger';
 import { VirtualFile } from '@tomsoftware/virtual-fs';
 import { ViVersion } from '../vi-version';
-import { VCTPObjectBase } from '../vctp-parsing/vctp-object-base';
+import { TypeGroup, VCTPObjectBase } from '../vctp-parsing/vctp-object-base';
 import { VCTPObjectFactory } from '../vctp-parsing/vctp-object-factory';
+
+export type GroupCounts = Record<TypeGroup, number>;
 
 /** Parses the VCTP container that contains datatypes used in the VI */
 export class VCTP {
@@ -21,6 +23,11 @@ export class VCTP {
     this.parse(reader, version);
   }
 
+  /** returns on type definition by index */
+  public getByIndex(index: number): VCTPObjectBase | null {
+    return this.objects[index] ?? null;
+  }
+
   /** Parse a given container */
   private parse(reader: VirtualFile, version: ViVersion): void {
     const factory = new VCTPObjectFactory();
@@ -30,11 +37,9 @@ export class VCTP {
     const count = reader.readUInt32BE();
     let pos = reader.tell();
 
-    // 1. Create all objects
-    reader.seek(pos);
-
     const rootObjects: VCTPObjectBase[] = [];
 
+    // read all root objects
     for (let i = 0; i < count; i++) {
       const length = reader.readUInt16BE();
 
@@ -45,7 +50,13 @@ export class VCTP {
 
       const flags = reader.readByte();
       const objectType = reader.readByte();
-      const newObject = factory.createObject(reader.tell(), length,flags, objectType);
+      const offset = reader.tell();
+      const newObject = factory.createObject({
+        offset,
+        length,
+        flags,
+        objectType
+      });
       if (newObject != null) {
         rootObjects.push(newObject);
       }
@@ -63,6 +74,32 @@ export class VCTP {
 
     this.objects = factory.objects;
   }
+
+
+  /** Return the numbers of groups defined by a given type definition index */
+  public countGroups(index: number): GroupCounts {
+    const result: GroupCounts = {
+      [TypeGroup.Unknown]: 0,
+      [TypeGroup.Number]: 0,
+      [TypeGroup.String]: 0,
+      [TypeGroup.Path]: 0,
+      [TypeGroup.Container]: 0,
+    };
+
+    const ob = this.objects[index];
+    // add type itself
+    result[ob.getTypeGroup]++;
+
+    // add children
+    for (const child of ob.children) {
+      const r = this.countGroups(child.index);
+      for (const key of Object.keys(result)) {
+        result[Number(key) as TypeGroup] += r[Number(key) as TypeGroup];
+      }
+    }
+    return result;
+  }
+
 
   /** generate an xml-line output for this VCTP container */
   public toXml(): string {

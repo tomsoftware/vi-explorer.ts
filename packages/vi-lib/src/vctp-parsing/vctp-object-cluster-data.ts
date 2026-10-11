@@ -1,7 +1,7 @@
-import { VirtualFile } from "@tomsoftware/virtual-fs";
-import { VCTPObjectBase } from "./vctp-object-base";
-import { ViVersion } from "../vi-version";
-import { VCTPAttributeType } from "./vctp-attribute-type";
+import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { TypeGroup, VCTPObjectBase } from './vctp-object-base';
+import { ViVersion } from '../vi-version';
+import { VCTPAttributeType } from './vctp-attribute-type';
 
 export class VCTPObjectClusterData extends VCTPObjectBase {
   public parse(reader: VirtualFile, version: ViVersion) {
@@ -18,5 +18,9 @@ export class VCTPObjectClusterData extends VCTPObjectBase {
     this.addPropertyNumber(VCTPAttributeType.ClusterFormat, tmp);
     this.addPropertyString(VCTPAttributeType.ClusterFormatStr, tmpStr);
     this.paresLabel(reader);
+  }
+
+  public get getTypeGroup(): TypeGroup {
+    return TypeGroup.Unknown;
   }
 }

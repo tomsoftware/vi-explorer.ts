@@ -15,9 +15,14 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>();
 
+type passwordInfos = {
+  psw: string,
+  hash: string
+}
+
 const size = ref<number | null>(null);
 const img = ref<string | null>(null);
-const passwordHash = ref<string>('');
+const passwordHash = ref<passwordInfos>({psw: '', hash: ''});
 const version = ref<string>('');
 const libPasswordHash = ref<string>('');
 const vi = ref<ViFile | null>(null);
@@ -38,14 +43,22 @@ function getIconImage(vi: ViFile): string | null {
 }
 
 /** Read password information */
-function getPasswordInfo(vi: ViFile) {
+function getPasswordInfo(vi: ViFile): passwordInfos {
   const viPassword = new ViPassword(vi);
 
+  const terminal = vi.getTerminal();
+  
   if (viPassword.fileHasPassword) {
-    return viPassword.passwordHashHex;
+    return {
+      psw: viPassword.passwordHashHex,
+      hash: ''
+    }
   }
 
-  return '';
+  return {
+    psw: '',
+    hash: ''
+  };
 }
 
 /** Read / process all properties from VI */
@@ -127,8 +140,8 @@ function closeView() {
 
       <p>
         <strong>Password: </strong>
-        <i v-if="passwordHash === ''">not set</i>
-        <span v-else>{{ passwordHash }}</span>
+        <i v-if="passwordHash.psw === ''">not set</i>
+        <span v-else>{{ passwordHash.psw }}</span>
       </p>
 
       <p>

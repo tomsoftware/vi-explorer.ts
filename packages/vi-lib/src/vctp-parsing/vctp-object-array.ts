@@ -1,12 +1,12 @@
-import { VirtualFile } from "@tomsoftware/virtual-fs";
-import { VCTPObjectBase } from "./vctp-object-base";
-import { ViVersion } from "../vi-version";
-import { VCTPClientRef } from "./vctp-client-ref";
-import { VCTPAttributeType } from "./vctp-attribute-type";
+import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { IObjectFactory, TypeGroup, VCTPObjectBase } from './vctp-object-base';
+import { ViVersion } from '../vi-version';
+import { VCTPClientRef } from './vctp-client-ref';
+import { VCTPAttributeType } from './vctp-attribute-type';
 
 export class VCTPObjectArray extends VCTPObjectBase {
-  public parse(reader: VirtualFile, version: ViVersion) {
 
+  public parse(reader: VirtualFile, version: ViVersion, factory: IObjectFactory) {
     const dimensions = reader.readUInt16BE();
     if (dimensions > 64) {
       VCTPObjectBase.logging.error(`Array Dimension (${dimensions}) is > 64 @ ${this.offset}`);
@@ -31,15 +31,19 @@ export class VCTPObjectArray extends VCTPObjectBase {
     if (ok) {
       const arrayTypeIndex = reader.readUInt16BE();
       if (arrayTypeIndex > this.index) {
-        VCTPObjectBase.logging.error(`Wrong value for Array-Type-Index ${arrayTypeIndex} is > "This-Array-Object"-Index: ${this.index} @ ${this.offset}`);
+        VCTPObjectBase.logging.error(`Wrong value for Array-Type-Index ${arrayTypeIndex} is > 'This-Array-Object'-Index: ${this.index} @ ${this.offset}`);
         ok = false;
       } else {
-        this.children.push(new VCTPClientRef(arrayTypeIndex, 0));
+        this.children.push(new VCTPClientRef(arrayTypeIndex, factory.resolveObjectByIndex(arrayTypeIndex), 0));
       }
     }
 
     if (ok) {
       this.paresLabel(reader);
     }
+  }
+
+  public get getTypeGroup(): TypeGroup {
+    return TypeGroup.Unknown;
   }
 }

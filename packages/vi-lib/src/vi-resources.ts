@@ -51,8 +51,17 @@ export class ViResources {
     return !!this.resources.find((r) => r.compareName(name));
   }
 
-  /** return the content of the resource */
+  /** return the content of a resource by name */
   public getResourceByName(name: string): ViResourceContainer | null {
     return this.resources.find((r) => r.compareName(name)) ?? null;
+  }
+
+  /** return a file reader of a resource by name */
+  public getReaderByName(name: string, compressed: boolean): VirtualFile | null {
+    const resource = this.getResourceByName(name);
+    if (resource == null) {
+      return null;
+    }
+    return resource.getReader(compressed);
   }
 }

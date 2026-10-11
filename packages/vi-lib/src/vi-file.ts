@@ -7,6 +7,7 @@ import { ViVersion } from './vi-version';
 import { ViSaveRecord } from './vi-save-record';
 import { VCTP } from './container/vctp';
 import { LinkedObjectContainer } from './container/linked-object-container';
+import { CONP } from './container/conp';
 
 export class ViFile {
   private static logging = new Logger('ViFile');
@@ -14,6 +15,7 @@ export class ViFile {
   private readonly header: ViHeader;
   public readonly resources: ViResources;
   private readonly viSaveRecord: ViSaveRecord;
+  private vctp: VCTP | null = null;
 
   /** Return the internals file name of the VI */
   public get fileName(): string {
@@ -72,12 +74,28 @@ export class ViFile {
     return new LinkedObjectContainer(reader, this.version);
   }
 
+  public getTerminal() {
+    const cpct = this.getTerminalIndex();
+    const vctp = this.getVCTP();
+    return vctp.getByIndex(cpct.first());
+  }
+
+  /** Returns Connector Port Type that holds the indexes of the Terminals of the VI */
+  public getTerminalIndex(): CONP {
+    let reader = this.resources.getReaderByName('CONP', false);
+    return new CONP(reader);
+  }
 
   /** Returns VCTP "VI Consolidated Types" container */
   public getVCTP(): VCTP {
+    if (this.vctp != null) {
+      return this.vctp;
+    }
+
     const container = this.resources.getResourceByName('VCTP');
     const reader = container?.getReader(true) ?? null;
-    return new VCTP(reader, this.version);
+    this.vctp = new VCTP(reader, this.version);
+    return this.vctp;
   }
 
 }

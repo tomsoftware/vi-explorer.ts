@@ -7,8 +7,25 @@ import { VCTPValueEntry } from './vctp-value-entry';
 import { Logger } from '@tomsoftware/logger';
 import { VCTPAttributeType } from './vctp-attribute-type';
 
+export type BaseTypeInfo = {
+  offset: number,
+  length: number,
+  flags: number,
+  objectType: number
+}
+
+/** Defines groups a Type is associated with */
+export enum TypeGroup {
+  Unknown = 0,
+  Number = 1,
+  String = 2,
+  Path = 3,
+  Container = 4
+}
+
 export interface IObjectFactory {
-  createObject(offset: number, length: number, flags: number, objectType: number): VCTPObjectBase | null;
+  createObject(baseTypeInfo: BaseTypeInfo): VCTPObjectBase | null;
+  resolveObjectByIndex(index: number): VCTPObjectBase;
 }
 
 export abstract class VCTPObjectBase {
@@ -21,11 +38,13 @@ export abstract class VCTPObjectBase {
   public readonly flags;
 
   public label = '';
-  public name = '';
 
   public readonly attributes: VCTPAttribute[] = [];
   public readonly children: VCTPClientRef[] = [];
   public readonly values: VCTPValueEntry[] = [];
+
+  /** Return a grouped type of this type definition */
+  public abstract getTypeGroup: TypeGroup;
 
   public static mainTypeFromValue(fileType: number): VCTPMainType {
     if (fileType < 0) {
@@ -50,12 +69,12 @@ export abstract class VCTPObjectBase {
   }
 
 
-  constructor(index: number, offset: number, length: number, flags: number, type: number) {
+  constructor(index: number, baseTypeInfo: BaseTypeInfo) {
     this.index = index;
-    this.offset = offset;
-    this.length = length;
-    this.flags = flags;
-    this.type = type;
+    this.offset = baseTypeInfo.offset;
+    this.length = baseTypeInfo.length;
+    this.flags = baseTypeInfo.flags;
+    this.type = baseTypeInfo.objectType;
   }
 
   public abstract parse(reader: VirtualFile, version: ViVersion, factory: IObjectFactory): void;
@@ -87,13 +106,5 @@ export abstract class VCTPObjectBase {
       VCTPObjectBase.logging.error(`Caption/Label size mismatch (${leftLength - length} - len: ${length} - size: ${this.length}) of type:0x${this.type.toString(16)} [index=${this.index}] Error @ ${this.offset}`);
     }
 
-  }
-
-  protected toXml(level: number) {
-
-  }
-
-  public toString() {
-    return this.toXml(0);
   }
 }

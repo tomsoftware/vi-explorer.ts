@@ -1,12 +1,11 @@
-import { VirtualFile } from "@tomsoftware/virtual-fs";
-import { VCTPObjectBase } from "./vctp-object-base";
-import { ViVersion } from "../vi-version";
-import { VCTPType } from "./vctp-types";
-import { VCTPClientRef } from "./vctp-client-ref";
-import { VCTPAttributeType } from "./vctp-attribute-type";
+import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { IObjectFactory, TypeGroup, VCTPObjectBase } from './vctp-object-base';
+import { ViVersion } from '../vi-version';
+import { VCTPClientRef } from './vctp-client-ref';
+import { VCTPType } from './vctp-types';
 
 export class VCTPObjectCluster extends VCTPObjectBase {
-  public parse(reader: VirtualFile, version: ViVersion) {
+  public parse(reader: VirtualFile, version: ViVersion, factory: IObjectFactory) {
     const count = reader.readUInt16BE();
     if (count > 500) {
       VCTPObjectBase.logging.error(`Cluster Item count (${count}) is > 124 @ ${this.offset}`);
@@ -14,9 +13,14 @@ export class VCTPObjectCluster extends VCTPObjectBase {
     }
 
     for (let i = 0; i < count; i++) {
-      this.children.push(new VCTPClientRef(reader.readUInt16BE(), 0));
+      const index = reader.readUInt16BE();
+      this.children.push(new VCTPClientRef(index, factory.resolveObjectByIndex(index), 0));
     }
 
     this.paresLabel(reader);
+  }
+
+  public get getTypeGroup(): TypeGroup {
+    return this.type == VCTPType.ClusterNumFixPoint ? TypeGroup.Number : TypeGroup.Container;
   }
 }

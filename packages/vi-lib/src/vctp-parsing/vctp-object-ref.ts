@@ -1,13 +1,13 @@
-import { VirtualFile } from "@tomsoftware/virtual-fs";
-import { VCTPObjectBase } from "./vctp-object-base";
-import { ViVersion } from "../vi-version";
-import { VCTPClientRef } from "./vctp-client-ref";
-import { VCTPAttributeType } from "./vctp-attribute-type";
+import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { IObjectFactory, TypeGroup, VCTPObjectBase } from './vctp-object-base';
+import { ViVersion } from '../vi-version';
+import { VCTPClientRef } from './vctp-client-ref';
+import { VCTPAttributeType } from './vctp-attribute-type';
 
 
 export class VCTPObjectRef extends VCTPObjectBase {
-  public parse(reader: VirtualFile, version: ViVersion) {
 
+  public parse(reader: VirtualFile, version: ViVersion, factory: IObjectFactory) {
     const refType = reader.readUInt16BE();
     this.addPropertyNumber(VCTPAttributeType.RefType, refType);
 
@@ -17,7 +17,7 @@ export class VCTPObjectRef extends VCTPObjectBase {
     switch (refType) {
       case 0x1:
         refTypeName = 'DataLogFile';
-        ok = this.readObjectPropertyRefQueue(reader);
+        ok = this.readObjectPropertyRefQueue(reader, factory);
         break;
       case 0x4:
         refTypeName = 'Occurrence';
@@ -25,11 +25,11 @@ export class VCTPObjectRef extends VCTPObjectBase {
         break;
       case 0x17:
         refTypeName = 'EventRegistration';
-        ok = this.readObjectPropertyRefEventRegist(reader);
+        ok = this.readObjectPropertyRefEventRegistration(reader, factory);
         break;
       case 0x19:
         refTypeName = 'UserEvent';
-        ok = this.readObjectPropertyRefQueue(reader);
+        ok = this.readObjectPropertyRefQueue(reader, factory);
         break;
       case 0x5:
         refTypeName = 'TCP connection';
@@ -41,7 +41,7 @@ export class VCTPObjectRef extends VCTPObjectBase {
         break;
       case 0x11:
         refTypeName = 'Notifier Refnum';
-        ok = this.readObjectProperty_0Pre0Post(reader);
+        ok = this.readObjectProperty_0Pre0Post(reader, factory);
         break;
       case 0x13:
         refTypeName = 'IrDA connection';
@@ -60,22 +60,22 @@ export class VCTPObjectRef extends VCTPObjectBase {
         break;
       case 0x08:
         refTypeName = 'Control';
-        ok = this.readObjectPropertyRefControl(reader);
+        ok = this.readObjectPropertyRefControl(reader, factory);
         break;
       case 0x12:
         refTypeName = 'Queue';
-        ok = this.readObjectPropertyRefQueue(reader);
+        ok = this.readObjectPropertyRefQueue(reader, factory);
         break;
       case 0x14:
         refTypeName = 'Channel';
         break;
       case 0x20:
         refTypeName = 'data value reference';
-        ok = this.readObjectPropertyRefDataValue(reader);
+        ok = this.readObjectPropertyRefDataValue(reader, factory);
         break;
       case 0x21:
         refTypeName = 'fifo refnum';
-        ok = this.readObjectProperty_0Pre0Post(reader);
+        ok = this.readObjectProperty_0Pre0Post(reader, factory);
         break;
       case 0x1E:
         refTypeName = 'Class';
@@ -92,12 +92,17 @@ export class VCTPObjectRef extends VCTPObjectBase {
     }
   }
 
+  public get getTypeGroup(): TypeGroup {
+    return TypeGroup.Unknown;
+  }
 
-  private readObjectPropertyRefQueue(reader: VirtualFile): boolean {
+
+  private readObjectPropertyRefQueue(reader: VirtualFile, factory: IObjectFactory): boolean {
     const count = reader.readUInt16BE();
     if (count <= 1) {
       for (let i = 0; i < count; i++) {
-        this.children.push(new VCTPClientRef(reader.readUInt16BE(), 0));
+        const index = reader.readUInt16BE();
+        this.children.push(new VCTPClientRef(index, factory.resolveObjectByIndex(index), 0));
       }
       return true;
     }
@@ -106,7 +111,7 @@ export class VCTPObjectRef extends VCTPObjectBase {
     return false;
   }
 
-   private readObjectPropertyRefEventRegist(reader: VirtualFile): boolean {
+   private readObjectPropertyRefEventRegistration(reader: VirtualFile, factory: IObjectFactory): boolean {
     const tmp1 = reader.readUInt16BE();
     const count = reader.readUInt16BE();
 
@@ -115,7 +120,8 @@ export class VCTPObjectRef extends VCTPObjectBase {
         reader.readUInt16BE();
         reader.readUInt16BE();
         reader.readUInt16BE();
-        this.children.push(new VCTPClientRef(reader.readUInt16BE(), 0));
+        const index = reader.readUInt16BE();
+        this.children.push(new VCTPClientRef(index, factory.resolveObjectByIndex(index), 0));
       }
       return true;
     }
@@ -125,11 +131,12 @@ export class VCTPObjectRef extends VCTPObjectBase {
   }
 
 
-  private readObjectPropertyRefControl(reader: VirtualFile): boolean {
+  private readObjectPropertyRefControl(reader: VirtualFile, factory: IObjectFactory): boolean {
     const count = reader.readUInt16BE();
     if (count <= 1) {
       for (let i = 0; i < count; i++) {
-        this.children.push(new VCTPClientRef(reader.readUInt16BE(), 0));
+        const index = reader.readUInt16BE();
+        this.children.push(new VCTPClientRef(index, factory.resolveObjectByIndex(index), 0));
       }
 
       const flags = reader.readUInt32BE();
@@ -142,11 +149,12 @@ export class VCTPObjectRef extends VCTPObjectBase {
   }
 
 
-   private readObjectProperty_0Pre0Post(reader: VirtualFile): boolean {
+   private readObjectProperty_0Pre0Post(reader: VirtualFile, factory: IObjectFactory): boolean {
     const count = reader.readUInt16BE();
     if (count <= 1) {
       for (let i = 0; i < count; i++) {
-        this.children.push(new VCTPClientRef(reader.readUInt16BE(), 0));
+        const index = reader.readUInt16BE();
+        this.children.push(new VCTPClientRef(index, factory.resolveObjectByIndex(index), 0));
       }
       return true;
     }
@@ -155,12 +163,13 @@ export class VCTPObjectRef extends VCTPObjectBase {
     return false;
   }
 
-  private readObjectPropertyRefDataValue(reader: VirtualFile): boolean {
+  private readObjectPropertyRefDataValue(reader: VirtualFile, factory: IObjectFactory): boolean {
 
     const count = reader.readUInt16BE();
     if (count <= 1) {
       for (let i = 0; i < count; i++) {
-        this.children.push(new VCTPClientRef(reader.readUInt16BE(), 0));
+        const index = reader.readUInt16BE();
+        this.children.push(new VCTPClientRef(index, factory.resolveObjectByIndex(index), 0));
       }
 
       const value = reader.readByte();

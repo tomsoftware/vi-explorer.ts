@@ -1,7 +1,7 @@
-import { VirtualFile } from "@tomsoftware/virtual-fs";
-import { VCTPObjectBase } from "./vctp-object-base";
-import { ViVersion } from "../vi-version";
-import { VCTPType } from "./vctp-types";
+import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { TypeGroup, VCTPObjectBase } from './vctp-object-base';
+import { ViVersion } from '../vi-version';
+import { VCTPType } from './vctp-types';
 
 export class VCTPObjectBlob extends VCTPObjectBase {
   public parse(reader: VirtualFile, version: ViVersion) {
@@ -19,5 +19,15 @@ export class VCTPObjectBlob extends VCTPObjectBase {
 
     VCTPObjectBase.logging.warn(`Blob with unknown property (0x${tmp.toString(16)})??? @ ${this.offset ?? 0}`);
     return;
+  }
+  
+  public get getTypeGroup(): TypeGroup {
+    if (this.type == VCTPType.String) {
+      return TypeGroup.String;
+    }
+    if (this.type == VCTPType.Path) {
+      return TypeGroup.Path;
+    }
+    return TypeGroup.Unknown;
   }
 }

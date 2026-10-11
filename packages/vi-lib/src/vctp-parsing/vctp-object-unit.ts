@@ -1,12 +1,11 @@
-import { VirtualFile } from "@tomsoftware/virtual-fs";
-import { VCTPObjectBase } from "./vctp-object-base";
-import { ViVersion } from "../vi-version";
-import { VCTPType } from "./vctp-types";
-import { VCTPValueEntry } from "./vctp-value-entry";
+import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { TypeGroup, VCTPObjectBase } from './vctp-object-base';
+import { ViVersion } from '../vi-version';
+import { VCTPType } from './vctp-types';
+import { VCTPValueEntry } from './vctp-value-entry';
 
 export class VCTPObjectUnit extends VCTPObjectBase {
   public parse(reader: VirtualFile, version: ViVersion) {
-
     const count = reader.readUInt16BE();
     const isTextEnum = this.type === VCTPType.UnitU16 || this.type === VCTPType.UnitU8 || this.type === VCTPType.UnitU32;
     let dataSize = 0;
@@ -44,4 +43,9 @@ export class VCTPObjectUnit extends VCTPObjectBase {
 
     this.paresLabel(reader);
   }
+
+  public get getTypeGroup(): TypeGroup {
+    return TypeGroup.Number;
+  }
+
 }

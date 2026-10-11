@@ -1,9 +1,9 @@
-import { VirtualFile } from "@tomsoftware/virtual-fs";
-import { VCTPObjectBase } from "./vctp-object-base";
-import { ViVersion } from "../vi-version";
-import { VCTPClientRef } from "./vctp-client-ref";
-import { VCTPAttributeType } from "./vctp-attribute-type";
-import { VCTPObjectFactory } from "./vctp-object-factory";
+import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { TypeGroup, VCTPObjectBase } from './vctp-object-base';
+import { ViVersion } from '../vi-version';
+import { VCTPClientRef } from './vctp-client-ref';
+import { VCTPAttributeType } from './vctp-attribute-type';
+import { VCTPObjectFactory } from './vctp-object-factory';
 
 
 export class VCTPObjectTypeDef extends VCTPObjectBase {
@@ -23,17 +23,28 @@ export class VCTPObjectTypeDef extends VCTPObjectBase {
 
     const length = Math.max(0, reader.readUInt16BE() - 4);
     const flags = reader.readByte();
-    const pos = reader.tell();
+    const offset = reader.tell();
     const objectType = reader.readByte();
 
-    const newObject = factory.createObject(pos, length,flags, objectType);
+    const newObject = factory.createObject({
+      offset,
+      length,
+      flags,
+      objectType
+    });
+
     if (newObject == null) {
       return;
     }
 
-    this.children.push(new VCTPClientRef(newObject?.index, 0));
+    const newIndex = newObject.index;
+    this.children.push(new VCTPClientRef(newIndex, factory.resolveObjectByIndex(newIndex), 0));
     newObject.parse(reader, version, factory);
 
     this.paresLabel(reader);
+  }
+
+  public get getTypeGroup(): TypeGroup {
+    return TypeGroup.Unknown;
   }
 }

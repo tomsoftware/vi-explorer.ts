@@ -1,6 +1,6 @@
-import { VirtualFile } from "@tomsoftware/virtual-fs";
-import { VCTPObjectBase } from "./vctp-object-base";
-import { ViVersion } from "../vi-version";
+import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { TypeGroup, VCTPObjectBase } from './vctp-object-base';
+import { ViVersion } from '../vi-version';
 
 export class VCTPObjectNumber extends VCTPObjectBase {
   public unknown: number = 0;
@@ -13,4 +13,9 @@ export class VCTPObjectNumber extends VCTPObjectBase {
 
     this.paresLabel(reader);
   }
+
+  public get getTypeGroup(): TypeGroup {
+    return TypeGroup.Number;
+  }
+  
 }
