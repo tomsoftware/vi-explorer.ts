@@ -8,7 +8,7 @@ export class VCTPObjectUnknown extends VCTPObjectBase {
     // nothing - we do not know this type
   }
 
-  public get getTypeGroup(): TypeGroup {
+  public get typeGroup(): TypeGroup {
     return TypeGroup.Unknown;
   }
 }

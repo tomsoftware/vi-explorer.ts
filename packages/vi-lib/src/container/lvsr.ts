@@ -1,5 +1,6 @@
 import { Logger } from '@tomsoftware/logger';
 import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { Md5 } from '../utils/md5';
 
 
 export class LVSR {
@@ -8,7 +9,7 @@ export class LVSR {
   public versionNumber: number = 0;
   public unknown: number = 0;
   public flags: number = 0;
-  public libPasswordHash: Uint8Array;
+  public libPasswordHash: Md5;
 
   /** True it the protected flag is set */
   public get isProtected(): boolean {
@@ -20,10 +21,14 @@ export class LVSR {
     return (this.flags & 0xDFFF);
   }
 
+  /** return true if the VI has a library-password set */
+  public get hasLibPassword(): boolean {
+    return (this.libPasswordHash.isValid && !this.libPasswordHash.isEmpty);
+  }
 
   constructor(reader: VirtualFile | null) {
     if (reader == null) {
-        this.libPasswordHash = new Uint8Array(0);
+        this.libPasswordHash = Md5.invalid;
         LVSR.logging.error('File has no LVSR container');
         return;
     }
@@ -33,7 +38,7 @@ export class LVSR {
     this.flags = reader.readUInt16LE();
 
     reader.seek(96);
-    this.libPasswordHash = reader.readBytes(16);
+    this.libPasswordHash = Md5.fromBuffer(reader.readBytes(16));
   }
 
 }

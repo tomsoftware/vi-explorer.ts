@@ -21,7 +21,7 @@ export class VCTPObjectBlob extends VCTPObjectBase {
     return;
   }
   
-  public get getTypeGroup(): TypeGroup {
+  public get typeGroup(): TypeGroup {
     if (this.type == VCTPType.String) {
       return TypeGroup.String;
     }

@@ -44,7 +44,7 @@ export class VCTPObjectUnit extends VCTPObjectBase {
     this.paresLabel(reader);
   }
 
-  public get getTypeGroup(): TypeGroup {
+  public get typeGroup(): TypeGroup {
     return TypeGroup.Number;
   }
 

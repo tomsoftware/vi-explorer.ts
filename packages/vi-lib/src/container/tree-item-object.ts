@@ -3,7 +3,6 @@ import { Logger } from '@tomsoftware/logger';
 import { TreeItem, TreeObjectType } from './tree-item';
 import { TreeObjectHelper } from './tree-object-helper';
 import { FileVersion } from './tree-object-reader';
-import { Tools } from '../tools';
 
 export class TreeItemObject extends TreeItem {
   private static logging = new Logger('TreeItemObject');
@@ -16,8 +15,8 @@ export class TreeItemObject extends TreeItem {
     cRead.seek(pos);
 
     console.log('objectName: ' + this.objectName);
-    console.log('c: ' + pos + '\t--> ' + Tools.readHex(cRead, 10));
-    console.log('d: ' + dRead.tell + '\t--> ' + Tools.readHex(dRead, 10));
+    console.log('c: ' + pos + '\t--> ' + TreeItemObject.readHex(cRead, 10));
+    console.log('d: ' + dRead.tell + '\t--> ' + TreeItemObject.readHex(dRead, 10));
 
     let argLen = 1;
 
@@ -58,17 +57,34 @@ export class TreeItemObject extends TreeItem {
         // - VERSION_B -//
         argLen = 2;
         const argStr = cRead.readBytes(argLen);
-        TreeItemObject.logging.log(Tools.bytesToHex(argStr));
+        TreeItemObject.logging.log(TreeItemObject.bytesToHex(argStr));
         this.prop = argStr;
       } else {
         // - VERSION_C -//
         const argStr = dRead.readBytes(dataLen);
-        TreeItemObject.logging.log(Tools.bytesToHex(argStr));
+        TreeItemObject.logging.log(TreeItemObject.bytesToHex(argStr));
         this.prop = argStr;
       }
     }
   }
 
+  private static readHex(reader: VirtualFile, length: number): string {
+    const buffer = reader.readBytes(length);
+    return this.bytesToHex(buffer);
+  }
+
+  /** Returns a hex string from the given array */
+  private static bytesToHex(buffer: Uint8Array): string {
+    let result = '';
+    const length = buffer.length;
+
+    for (let i = 0; i < length; i++) {
+      const v = buffer[i];
+      result += ('00' + v.toString(16)).slice(-2) + ' ';
+    }
+
+    return result;
+  }
 
   public get objectType(): TreeObjectType {
     return this.classTypeId > 0 ? TreeObjectType.TreeObject : TreeObjectType.TreeArray;

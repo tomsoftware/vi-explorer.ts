@@ -8,6 +8,9 @@ import { ViSaveRecord } from './vi-save-record';
 import { VCTP } from './container/vctp';
 import { LinkedObjectContainer } from './container/linked-object-container';
 import { CONP } from './container/conp';
+import { CPC2 } from './container/cpc2';
+import { VCTPObjectBase } from './vctp-parsing/vctp-object-base';
+import { LIBN } from './container/libn';
 
 export class ViFile {
   private static logging = new Logger('ViFile');
@@ -53,38 +56,61 @@ export class ViFile {
     return new LinkedObjectContainer(reader, this.version);
   }
 
-  /** Returns */
+  /** Returns LIds as LinkedObjectContainer*/
   public getLIds() {
     const container = this.resources.getResourceByName('LIds');
     const reader = container?.getReader(false) ?? null;
     return new LinkedObjectContainer(reader, this.version);
   }
 
-  /** Returns */
+  /** Returns LIfp as LinkedObjectContainer */
   public getLIfp() {
     const container = this.resources.getResourceByName('LIfp');
     const reader = container?.getReader(false) ?? null;
     return new LinkedObjectContainer(reader, this.version);
   }
 
-  /** Returns */
+  /** Returns LIbd as LinkedObjectContainer */
   public getLIbd() {
     const container = this.resources.getResourceByName('LIbd');
     const reader = container?.getReader(false) ?? null;
     return new LinkedObjectContainer(reader, this.version);
   }
 
-  public getTerminal() {
-    const cpct = this.getTerminalIndex();
-    const vctp = this.getVCTP();
-    return vctp.getByIndex(cpct.first());
+  /** returns the LIBN container */
+  public getLIBN(): LIBN {
+    const container = this.resources.getResourceByName('LIBN');
+    const reader = container?.getReader(false) ?? null;
+    return new LIBN(reader);
   }
 
-  /** Returns Connector Port Type that holds the indexes of the Terminals of the VI */
-  public getTerminalIndex(): CONP {
-    let reader = this.resources.getReaderByName('CONP', false);
+  /**
+   * Returns the CPC2 Object
+   * - ID to terminal in the vctp type definition
+   * - This ID pointing the main terminal used for the password Hash
+   **/
+  public getCPC2() {
+    const container = this.resources.getResourceByName('CPC2');
+    const reader = container?.getReader(false);
+    if (reader == null) {
+      return null;
+    }
+    return new CPC2(reader);
+  }
+
+  /** Returns the CONP Object 
+   * - ID to terminal in the vctp type definition 
+   * - This ID might be pointing the main terminal connector of the VI
+   **/
+  public getCONP() {
+    const container = this.resources.getResourceByName('CONP');
+    const reader = container?.getReader(false);
+    if (reader == null) {
+      return null;
+    }
     return new CONP(reader);
   }
+
 
   /** Returns VCTP "VI Consolidated Types" container */
   public getVCTP(): VCTP {

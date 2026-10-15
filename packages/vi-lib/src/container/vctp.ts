@@ -1,18 +1,15 @@
 import { Logger } from '@tomsoftware/logger';
 import { VirtualFile } from '@tomsoftware/virtual-fs';
 import { ViVersion } from '../vi-version';
-import { TypeGroup, VCTPObjectBase } from '../vctp-parsing/vctp-object-base';
+import { VCTPObjectBase } from '../vctp-parsing/vctp-object-base';
 import { VCTPObjectFactory } from '../vctp-parsing/vctp-object-factory';
-
-export type GroupCounts = Record<TypeGroup, number>;
 
 /** Parses the VCTP container that contains datatypes used in the VI */
 export class VCTP {
   private static readonly logging = new Logger('VCTP');
 
-  private objects: VCTPObjectBase[] = [];
-  private readonly interfaceCache: number[] = [];
-
+  private readonly objects: VCTPObjectBase[] = [];
+  private readonly indexMap: Array<number> = [];
  
   constructor(reader: VirtualFile | null, version: ViVersion) {
     if (reader == null) {
@@ -20,16 +17,47 @@ export class VCTP {
       return;
     }
 
-    this.parse(reader, version);
+    this.objects = this.parseTypeDefinitions(reader, version);
+    this.indexMap = this.parseIdList(reader);
   }
 
-  /** returns on type definition by index */
+  /** returns one type definition by index */
   public getByIndex(index: number): VCTPObjectBase | null {
     return this.objects[index] ?? null;
   }
 
-  /** Parse a given container */
-  private parse(reader: VirtualFile, version: ViVersion): void {
+  /** returns one type definition by it's id */
+  public getById(id: number): VCTPObjectBase | null {
+    // indexes are 1 based in VIs
+    const index = (this.indexMap[id - 1]);
+    if (index == null) {
+      return null;
+    }
+    return this.objects[index] ?? null;
+  }
+
+  /** Pars a map of "index <-> id" */
+  private parseIdList(reader: VirtualFile) {
+    const indexMap: number[] = [];
+    const count = this.readVariableSizeFieldU2p2(reader);
+    for (let i = 0; i< count; i++) {
+      const id = this.readVariableSizeFieldU2p2(reader);
+      indexMap.push(id);
+    }
+    return indexMap;
+  }
+
+  protected readVariableSizeFieldU2p2(reader: VirtualFile): number {
+    const value = reader.readUInt16BE();
+    if ((value & 0x8000) !== 0) {
+      return ((value & 0x7fff) << 16) | reader.readUInt16BE();
+    }
+    return value;
+  }
+
+
+  /** Parse list of Type Descriptions in the file */
+  private parseTypeDefinitions(reader: VirtualFile, version: ViVersion): VCTPObjectBase[] {
     const factory = new VCTPObjectFactory();
 
     reader.seek(0);
@@ -45,7 +73,7 @@ export class VCTP {
 
       if (length < 4) {
         VCTP.logging.error(`Internal error: wrong block size at object ${i}!`);
-        return;
+        return [];
       }
 
       const flags = reader.readByte();
@@ -72,110 +100,22 @@ export class VCTP {
       newObject.parse(reader, version, factory);
     }
 
-    this.objects = factory.objects;
+    return factory.objects;
   }
-
-
-  /** Return the numbers of groups defined by a given type definition index */
-  public countGroups(index: number): GroupCounts {
-    const result: GroupCounts = {
-      [TypeGroup.Unknown]: 0,
-      [TypeGroup.Number]: 0,
-      [TypeGroup.String]: 0,
-      [TypeGroup.Path]: 0,
-      [TypeGroup.Container]: 0,
-    };
-
-    const ob = this.objects[index];
-    // add type itself
-    result[ob.getTypeGroup]++;
-
-    // add children
-    for (const child of ob.children) {
-      const r = this.countGroups(child.index);
-      for (const key of Object.keys(result)) {
-        result[Number(key) as TypeGroup] += r[Number(key) as TypeGroup];
-      }
-    }
-    return result;
-  }
-
 
   /** generate an xml-line output for this VCTP container */
   public toXml(): string {
     const lines: string[] = ['<VCTP>'];
-    this.objectsToXml(this.objects, 1, lines);
-    lines.push('</VCTP>');
-    return lines.join('\n');
-  }
 
-
-  private objectsToXml(
-    objectList: VCTPObjectBase[],
-    level: number,
-    out: string[],
-  ): void {
-    const indent = '  '.repeat(level);
-
-    for (const obj of objectList) {
+    for (const obj of this.objects) {
       if (obj == null) {
         continue;
       }
 
-      const attrs = this.buildAttributes(obj);
-      const children = this.resolveChildren(obj);
-
-      if (children.length === 0) {
-        out.push(`${indent}<VAR ${attrs} />`);
-      } else {
-        out.push(`${indent}<VAR ${attrs} >`);
-        this.objectsToXml(children, level + 1, out);
-        out.push(`${indent}</VAR>`);
-      }
-    }
-  }
-/** Build the attribute values of the vcpt element */
-  private buildAttributes(obj: VCTPObjectBase): string {
-    const typeHex = '0x' + obj.type.toString(16);
-    const typeName = obj.typeName;
-
-    const parts = [
-      `index='${obj.index}'`,
-      `ObjectType='${typeHex}:${typeName}'`,
-    ];
-
-    if (obj.label) {
-      parts.push(`label='${obj.label}'`);
+      lines.push(obj.toXml(1, this.objects));
     }
 
-    // add additional attributes
-    for (const attr of obj.attributes) {
-      parts.push(`${attr.name}='${this.escapeXml(String(attr.value))}'`);
-    }
-
-    return parts.join(' ');
-  }
-
-  /** Resolves VCTPObjectBase from the children-references-index list */
-  private resolveChildren(obj: VCTPObjectBase): VCTPObjectBase[] {
-    const result: VCTPObjectBase[] = [];
-    for (const ref of obj.children) {
-      const child = this.objects[ref.index];
-      if (child) {
-        result.push(child);
-      } else {
-        VCTP.logging.warn(`Child index ${ref.index} not found (parent ${obj.index})`);
-      }
-    }
-    return result;
-  }
-
-  private escapeXml(s: string): string {
-    return s
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/'/g, '&apos;')
-      .replace(/"/g, '&quot;');
+    lines.push('</VCTP>');
+    return lines.join('\n');
   }
 }

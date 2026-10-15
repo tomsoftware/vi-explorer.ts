@@ -20,7 +20,7 @@ export class VCTPObjectCluster extends VCTPObjectBase {
     this.paresLabel(reader);
   }
 
-  public get getTypeGroup(): TypeGroup {
+  public get typeGroup(): TypeGroup {
     return this.type == VCTPType.ClusterNumFixPoint ? TypeGroup.Number : TypeGroup.Container;
   }
 }

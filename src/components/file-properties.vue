@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue';
 import { IconReader, ViFile, ViPassword } from '@tomsoftware/vi-lib';
 import ViResourceTable from './vi-resource-table.vue';
+import VctpTree from './vctp-tree.vue';
 import { VirtualFS } from '@tomsoftware/virtual-fs';
 
 const props = defineProps<{
@@ -46,7 +47,13 @@ function getIconImage(vi: ViFile): string | null {
 function getPasswordInfo(vi: ViFile): passwordInfos {
   const viPassword = new ViPassword(vi);
 
-  const terminal = vi.getTerminal();
+  const h1 = viPassword.bdpw.hash1.toHex();
+  const h2 = viPassword.bdpw.hash2.toHex();
+
+  const reCalculated = viPassword.calcHashesForFile();
+  const a = reCalculated?.hash1.toHex();
+  const b = reCalculated?.hash2.toHex();
+
   
   if (viPassword.fileHasPassword) {
     return {
@@ -86,7 +93,7 @@ async function loadFileProperties() {
     /** read the file version of the VI */
     version.value = viFile.version.toString();
     if (lvsr.fileHasLibraryPassword) {
-      libPasswordHash.value = lvsr.libraryPasswordHashHex;
+      libPasswordHash.value = lvsr.libraryPasswordTohHex;
     }
     else {
       libPasswordHash.value = '';
@@ -159,6 +166,11 @@ function closeView() {
     </div>
 
     <ViResourceTable
+      v-if="vi"
+      :vi="vi as unknown as ViFile"
+    />
+
+    <VctpTree
       v-if="vi"
       :vi="vi as unknown as ViFile"
     />

@@ -43,7 +43,7 @@ export class VCTPObjectArray extends VCTPObjectBase {
     }
   }
 
-  public get getTypeGroup(): TypeGroup {
+  public get typeGroup(): TypeGroup {
     return TypeGroup.Unknown;
   }
 }
