@@ -1,4 +1,4 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ByteString, VirtualFile } from '@tomsoftware/virtual-fs';
 import { Logger } from '@tomsoftware/logger';
 import { ViHeader } from './vi-header';
 import { ViResources } from './vi-resources';
@@ -9,7 +9,6 @@ import { VCTP } from './container/vctp';
 import { LinkedObjectContainer } from './container/linked-object-container';
 import { CONP } from './container/conp';
 import { CPC2 } from './container/cpc2';
-import { VCTPObjectBase } from './vctp-parsing/vctp-object-base';
 import { LIBN } from './container/libn';
 
 export class ViFile {
@@ -21,8 +20,8 @@ export class ViFile {
   private vctp: VCTP | null = null;
 
   /** Return the internals file name of the VI */
-  public get fileName(): string {
-    return this.header.fileName ?? 'unknown';
+  public get fileName(): ByteString {
+    return this.header.fileName ?? ByteString.fromString('Unknown');
   } 
 
   /** Return the version on this VI file */
@@ -82,6 +81,27 @@ export class ViFile {
     const container = this.resources.getResourceByName('LIBN');
     const reader = container?.getReader(false) ?? null;
     return new LIBN(reader);
+  }
+
+  /** return the reader for the block diagram */
+  public getBlockDiagramReader(): VirtualFile | null {
+    if (this.resources.resourceExists('BDHc')) {
+      // for Version 10,11,12
+      return this.resources.getReaderByName('BDHc', true);
+    }
+
+     if (this.resources.resourceExists('BDHb')) {
+      // for Version 7,8
+      return this.resources.getReaderByName('BDHb', true);
+    }
+
+     if (this.resources.resourceExists('BDHP')) {
+      // for Version 5,6,7beta
+      return this.resources.getReaderByName('BDHP', false);
+    }
+
+    ViFile.logging.warn('No Block diagram found!');
+    return null;
   }
 
   /**

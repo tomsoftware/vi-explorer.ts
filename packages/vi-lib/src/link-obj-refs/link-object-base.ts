@@ -1,4 +1,4 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { VirtualFile, ByteString } from '@tomsoftware/virtual-fs';
 import { ViVersion } from '../vi-version';
 import { Logger } from '@tomsoftware/logger';
 
@@ -32,19 +32,19 @@ export abstract class LinkObjectBase {
   }
 
   /** read a string prefixed with is 1 byte size */
-  protected readBytePrefixedString(reader: VirtualFile) {
+  protected readBytePrefixedString(reader: VirtualFile): ByteString {
     const strLen = reader.readByte();
-    return reader.readAsciiString(strLen);
+    return reader.readString(strLen);
   }
 
     /** read a string prefixed with is 4 byte size */
-  protected readIntPrefixedString(reader: VirtualFile) {
+  protected readIntPrefixedString(reader: VirtualFile): ByteString {
     const strLen = reader.readUInt32BE();
     if (strLen >= reader.leftLength()) {
       LinkObjectBase.baseLogging.error('Size of string is to big! ' + strLen + ' ' + reader.getFilename());
-      return '';
+      return ByteString.empty;
     }
-    return reader.readAsciiString(strLen);
+    return reader.readString(strLen);
   }
 
   /** Parse data from current reader position into this LinkObject */

@@ -2,14 +2,17 @@ import { VirtualFile } from '@tomsoftware/virtual-fs';
 import { IObjectFactory, TypeGroup, VCTPObjectBase } from './vctp-object-base';
 import { ViVersion } from '../vi-version';
 import { VCTPClientRef } from './vctp-client-ref';
-import { VCTPAttributeType } from './vctp-attribute-type';
 
 
 export class VCTPObjectRef extends VCTPObjectBase {
+  public refTypeName: string = '';
+  public refType = 0;
+  public refControlFlags = 0;
+  public refDataValFlags = 0;
 
   public parse(reader: VirtualFile, version: ViVersion, factory: IObjectFactory) {
     const refType = reader.readUInt16BE();
-    this.addPropertyNumber(VCTPAttributeType.RefType, refType);
+    this.refType = refType;
 
     let refTypeName = '[unknown]';
     let ok = false;
@@ -85,7 +88,7 @@ export class VCTPObjectRef extends VCTPObjectBase {
         break;
     }
 
-    this.addPropertyString(VCTPAttributeType.RefTypeName, refTypeName);
+    this.refTypeName, refTypeName;
     
     if (ok) {
       this.paresLabel(reader);
@@ -140,7 +143,7 @@ export class VCTPObjectRef extends VCTPObjectBase {
       }
 
       const flags = reader.readUInt32BE();
-      this.addPropertyNumber(VCTPAttributeType.RefControlFlags, flags);
+      this.refControlFlags = flags;
       return true;
     }
 
@@ -173,7 +176,7 @@ export class VCTPObjectRef extends VCTPObjectBase {
       }
 
       const value = reader.readByte();
-      this.addPropertyNumber(VCTPAttributeType.RefDataValFlags, value);
+      this.refDataValFlags = value;
       return true;
     }
 

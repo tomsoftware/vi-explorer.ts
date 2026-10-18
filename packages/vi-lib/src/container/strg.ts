@@ -1,5 +1,5 @@
 import { Logger } from '@tomsoftware/logger';
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ByteString, VirtualFile } from '@tomsoftware/virtual-fs';
 
 /** Contains help information about this VI */
 export class STRG {
@@ -10,13 +10,13 @@ export class STRG {
   private offset = 0;
 
   /** return the description of this VI File */
-  public get description(): string {
+  public get description(): ByteString {
     if (this.reader == null) {
-        return '';
+        return ByteString.empty;
     }
     this.reader.seek(this.offset);
 
-    return this.reader.readAsciiString(this.length);
+    return this.reader.readString(this.length);
   }
 
   constructor(reader: VirtualFile | null) {

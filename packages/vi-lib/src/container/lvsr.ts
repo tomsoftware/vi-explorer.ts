@@ -38,7 +38,7 @@ export class LVSR {
     this.flags = reader.readUInt16LE();
 
     reader.seek(96);
-    this.libPasswordHash = Md5.fromBuffer(reader.readBytes(16));
+    this.libPasswordHash = Md5.hashBuffer(reader.readBytes(16));
   }
 
 }

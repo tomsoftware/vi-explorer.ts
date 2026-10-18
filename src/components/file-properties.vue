@@ -84,7 +84,7 @@ async function loadFileProperties() {
     vi.value = viFile;
 
     size.value = vf.length();
-    description.value = viFile.getStringDescription().description;
+    description.value = viFile.getStringDescription().description.asUtf8;
     img.value = getIconImage(viFile);
     passwordHash.value = getPasswordInfo(viFile);
 

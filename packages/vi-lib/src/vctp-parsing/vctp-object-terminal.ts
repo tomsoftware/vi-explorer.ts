@@ -2,9 +2,10 @@ import { VirtualFile } from '@tomsoftware/virtual-fs';
 import { IObjectFactory, TypeGroup, VCTPObjectBase } from './vctp-object-base';
 import { ViVersion } from '../vi-version';
 import { VCTPClientRef } from './vctp-client-ref';
-import { VCTPAttributeType } from './vctp-attribute-type';
 
 export class VCTPObjectTerminal extends VCTPObjectBase {
+  public terminalFlags = 0;
+  public terminalPattern = 0;
 
   public parse(reader: VirtualFile, version: ViVersion, factory: IObjectFactory) {
     const count = reader.readUInt16BE();
@@ -18,8 +19,8 @@ export class VCTPObjectTerminal extends VCTPObjectBase {
       this.children.push(new VCTPClientRef(index, factory.resolveObjectByIndex(index), 0));
     }
 
-    this.addPropertyNumber(VCTPAttributeType.TerminalFlags, reader.readUInt16BE());
-    this.addPropertyNumber(VCTPAttributeType.TerminalPattern, reader.readUInt16BE());
+    this.terminalFlags = reader.readUInt16BE();
+    this.terminalPattern = reader.readUInt16BE();
 
     if (version.compareTo(8, 0) >= 0) {
       const unknown = reader.readUInt16BE();
@@ -37,5 +38,12 @@ export class VCTPObjectTerminal extends VCTPObjectBase {
 
   public get typeGroup(): TypeGroup {
     return TypeGroup.Unknown;
+  }
+
+  public override getAttributes(): readonly [string, string | number][] {
+    return [
+      ['terminalFlags', this.terminalFlags],
+      ['terminalPattern', this.terminalPattern],
+    ]
   }
 }

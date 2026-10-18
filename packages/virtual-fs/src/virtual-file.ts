@@ -1,10 +1,10 @@
 import { Logger } from "@tomsoftware/logger";
 import { BufferedFile } from "./buffered-file";
+import { ByteString } from "./byte-string";
 
 /** Abstract representation of a file */
 export abstract class VirtualFile {
     private static readonly logger = new Logger(VirtualFile.name);
-    private static CachedAsciiTextDecoder = new TextDecoder('ascii');
     protected offset = 0;
     protected fileName: string;
 
@@ -135,17 +135,10 @@ export abstract class VirtualFile {
     }
 
     /** Read a ascii coded string of given length from the file */
-    public readAsciiString(length: number): string {
+    public readString(length: number): ByteString {
         const bytes = this.getBytes(this.offset, length);
         this.offset += length;
-        return VirtualFile.CachedAsciiTextDecoder.decode(bytes);
-    }
-
-    /** Read a ascii coded string of given length from the file that also can be terminated by a '\0' char */
-    public readAsciiNullString(length: number): string {
-        const string = this.readAsciiString(length);
-        const nullPos = string.indexOf('\0');
-        return nullPos >= 0 ? string.substring(0, nullPos) : string;
+        return new ByteString(bytes);
     }
 
     /** Set the current position in the file and returns this */

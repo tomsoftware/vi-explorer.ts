@@ -1,3 +1,4 @@
+import { ByteString } from '@tomsoftware/virtual-fs';
 import { TreeObjectHelper } from './tree-object-helper';
 
 export enum TreeObjectType {
@@ -20,7 +21,7 @@ export abstract class TreeItem {
   public parent: TreeItem | null = null;
   public children: TreeItem[] = [];
 
-  public value: string | null = null;
+  public value: ByteString | null = null;
   public count = 0;
   // public objtype: number = 0;
   public prop: Uint8Array | null = null;

@@ -1,3 +1,5 @@
+import { ByteString } from "@tomsoftware/virtual-fs";
+
 export class Md5 {
   private hash: Uint8Array;
 
@@ -79,15 +81,14 @@ export class Md5 {
   }
 
   /** return a md5 hash for a given string */
-  public static fromString(str: string): Md5 {
-    const md5 = new Md5State();
-    return md5.updateString(str).finalize();
+  public static hashString(str: ByteString): Md5 {
+    return this.hashBuffer(str.buffer);
   }
 
   /** return a md5 hash for a given buffer */
-  public static fromBuffer(buffer: Uint8Array): Md5 {
+  public static hashBuffer(buffer: Uint8Array): Md5 {
     const md5 = new Md5State();
-    return md5.updateBuffer(buffer).finalize();
+    return md5.update(buffer).finalize();
   }
 
   /** create a new md5 stream. Use update to add content
@@ -96,10 +97,7 @@ export class Md5 {
     return new Md5State();
   }
 
-  static fromHash(hash: Uint8Array): Md5 | null {
-    if (hash.length !== 16) {
-      return null;
-    }
+  public static fromHash(hash: Uint8Array): Md5 {
     return new Md5(hash);
   }
 
@@ -122,6 +120,8 @@ export class Md5 {
 }
 
 class Md5State {
+  private static CachedTextEncoder = new TextEncoder();
+
   private a = 0x67452301;
   private b = 0xefcdab89;
   private c = 0x98badcfe;
@@ -132,26 +132,19 @@ class Md5State {
   // number of bytes added to the hash
   private length = 0;
 
-  /** add a string to the state of the hash */
-  public updateString(str: string): Md5State {
-    const enc = new TextEncoder();
-    this.updateBuffer(enc.encode(str));
-    return this;
-  }
-
   // add a 32 bit Little-ending number
-  public updateIntLE(i: number): Md5State {
+  public updateWithInt32LE(i: number): Md5State {
     const buf = new Uint8Array(4);
     buf[0] = (i >> 0) & 0xff;
     buf[1] = (i >> 8) & 0xff;
     buf[2] = (i >> 16) & 0xff;
     buf[3] = (i >> 24) & 0xff;
-    this.updateBuffer(buf);
+    this.update(buf);
     return this;
   }
 
   /** add a Uint8Array to the state of the hash */
-  public updateBuffer(data: Uint8Array | null | undefined): Md5State {
+  public update(data: Uint8Array | null | undefined): Md5State {
     if (data == null) {
       return this;
     }
@@ -191,7 +184,7 @@ class Md5State {
     tail[tail.length - 5] = (sizeValue >> 24) & 0xff;
 
     // write tail
-    this.updateBuffer(tail);
+    this.update(tail);
 
     // destroy objects
     this.leftBuffer = new Uint8Array(0);

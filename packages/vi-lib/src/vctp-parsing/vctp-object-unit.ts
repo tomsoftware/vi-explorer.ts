@@ -17,7 +17,8 @@ export class VCTPObjectUnit extends VCTPObjectBase {
 
       if (isTextEnum) {
         length = reader.readByte();
-        label = reader.readAsciiString(length);
+        // nt sure about the encoding?
+        label = reader.readString(length).asAscii;
         dataSize += length + 1;
       } else {
         label = `0x${reader.readUInt32BE().toString(16)}`;

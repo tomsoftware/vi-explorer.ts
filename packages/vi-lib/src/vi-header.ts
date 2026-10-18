@@ -1,4 +1,4 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ByteString, VirtualFile } from '@tomsoftware/virtual-fs';
 import { Logger } from '@tomsoftware/logger';
 
 export interface BaseViHeader {
@@ -38,7 +38,7 @@ export class ViHeader {
 
   public baseHeader: BaseViHeader | null = null;
   public resourcesHeader: ResourcesListHeader | null = null;
-  public fileName: string | null = null;
+  public fileName: ByteString | null = null;
 
   constructor(reader: VirtualFile) {
     this.reader = reader;
@@ -81,9 +81,9 @@ export class ViHeader {
     return header;
   }
 
-  private readFileName(reader: VirtualFile): string | null {
+  private readFileName(reader: VirtualFile): ByteString {
     const size = reader.readByte();
-    return reader.readAsciiString(size);
+    return reader.readString(size);
   }
 
   private readResourceHeader(reader: VirtualFile, basicHeader: BaseViHeader): ResourcesListHeader {
@@ -104,10 +104,10 @@ export class ViHeader {
   private readBaseHeader(reader: VirtualFile, offset: number): BaseViHeader | null {
     reader.seek(offset);
 
-    const identifier1 = reader.readAsciiString(6);
+    const identifier1 = reader.readString(6).asAscii;
     const fileFormatVersion = reader.readUInt16BE();
-    const identifier3 = reader.readAsciiString(4);
-    const identifier4 = reader.readAsciiString(4);
+    const identifier3 = reader.readString(4).asAscii;
+    const identifier4 = reader.readString(4).asAscii;
     const rsrcOffset = reader.readUInt32BE();
     const rsrcSize = reader.readUInt32BE();
     const resourceListOffset = reader.tell();

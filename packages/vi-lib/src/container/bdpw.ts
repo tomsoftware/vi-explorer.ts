@@ -33,8 +33,8 @@ export class BDPW {
         return;
     }
 
-    this.passwordHash = Md5.fromBuffer(reader.readBytes(16));
-    this.hash1 = Md5.fromBuffer(reader.readBytes(16));
-    this.hash2 = Md5.fromBuffer(reader.readBytes(16));
+    this.passwordHash = Md5.fromHash(reader.readBytes(16));
+    this.hash1 = Md5.fromHash(reader.readBytes(16));
+    this.hash2 = Md5.fromHash(reader.readBytes(16));
   }
 }

@@ -2,9 +2,10 @@ import { VirtualFile } from '@tomsoftware/virtual-fs';
 import { IObjectFactory, TypeGroup, VCTPObjectBase } from './vctp-object-base';
 import { ViVersion } from '../vi-version';
 import { VCTPClientRef } from './vctp-client-ref';
-import { VCTPAttributeType } from './vctp-attribute-type';
 
 export class VCTPObjectArray extends VCTPObjectBase {
+  public arrayDimensions = 0;
+  public arrayFixedSize = 0;
 
   public parse(reader: VirtualFile, version: ViVersion, factory: IObjectFactory) {
     const dimensions = reader.readUInt16BE();
@@ -13,14 +14,14 @@ export class VCTPObjectArray extends VCTPObjectBase {
       return;
     }
 
-    this.addPropertyNumber(VCTPAttributeType.ArrayDimensions, dimensions);
+    this.arrayDimensions = dimensions;
 
     let ok = true;
     for (let i = 0; i < dimensions; i++) {
       const tmp = reader.readUInt32BE();
       if (tmp !== 0xffffffff && tmp !== 0xffffffff) {
         if ((tmp & 0x80000000) !== 0) {
-          this.addPropertyNumber(VCTPAttributeType.ArrayFixedSize, tmp & 0x00ffffff);
+          this.arrayFixedSize = tmp & 0x00ffffff;
         } else {
           VCTPObjectBase.logging.error(`Array with property (index: ${i} - flag: ${tmp} ? ) @ ${this.offset}`);
           ok = false;

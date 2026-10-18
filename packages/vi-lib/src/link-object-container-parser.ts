@@ -35,7 +35,7 @@ export class LinkObjectContainerParser {
       return { header, objects };
     }
 
-    let ident = reader.readAsciiString(4);
+    let ident = reader.readString(4).asAscii;
     if (this.version.compareTo(14,0) < 0) {
       header = new ObjectContainerHeader(ident);
       header.parseContainer(reader, this.version);
@@ -61,7 +61,7 @@ export class LinkObjectContainerParser {
         break;
       }
 
-      ident = reader.readAsciiString(4);
+      ident = reader.readString(4).asAscii;
 
       // create parser for object data
       const obj = LinkObjectFactory.create(ident);

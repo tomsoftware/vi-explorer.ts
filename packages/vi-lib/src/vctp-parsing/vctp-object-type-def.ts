@@ -1,24 +1,23 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { VirtualFile, ByteString } from '@tomsoftware/virtual-fs';
 import { TypeGroup, VCTPObjectBase } from './vctp-object-base';
 import { ViVersion } from '../vi-version';
 import { VCTPClientRef } from './vctp-client-ref';
-import { VCTPAttributeType } from './vctp-attribute-type';
 import { VCTPObjectFactory } from './vctp-object-factory';
 
-
 export class VCTPObjectTypeDef extends VCTPObjectBase {
-  public parse(reader: VirtualFile, version: ViVersion, factory: VCTPObjectFactory) {
+  public typDefFlag1: number = 0;
+  public typDefControlNames: ByteString[] = [];
 
+  public parse(reader: VirtualFile, version: ViVersion, factory: VCTPObjectFactory) {
     const tmp = reader.readUInt32BE();
-    this.addPropertyNumber(VCTPAttributeType.TypDefFlag1, tmp);
+    this.typDefFlag1 = tmp;
 
     const count = reader.readUInt32BE();
-    this.addPropertyNumber(VCTPAttributeType.TypDefControlNameCount, count);
 
     for (let i = 0; i < count; i++) {
       const length = reader.readByte();
-      const value = reader.readAsciiString(length);
-      this.addPropertyString(VCTPAttributeType.TypDefControlName1 + i, value);
+      const value = reader.readString(length);
+      this.typDefControlNames.push(value);
     }
 
     const length = Math.max(0, reader.readUInt16BE() - 4);

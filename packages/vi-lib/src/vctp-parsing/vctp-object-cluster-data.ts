@@ -1,22 +1,25 @@
 import { VirtualFile } from '@tomsoftware/virtual-fs';
 import { TypeGroup, VCTPObjectBase } from './vctp-object-base';
 import { ViVersion } from '../vi-version';
-import { VCTPAttributeType } from './vctp-attribute-type';
 
 export class VCTPObjectClusterData extends VCTPObjectBase {
-  public parse(reader: VirtualFile, version: ViVersion) {
+  public clusterFormat = 0;
+  public get clusterFormatName() {
 
-    const tmp = reader.readUInt16BE();
-    let tmpStr = `0x${tmp.toString(16)}`;
-    switch (tmp) {
-      case 6: tmpStr = 'TimeStamp'; break;
-      case 7: tmpStr = 'Digitaldata'; break;
-      case 9: tmpStr = 'Dynamicdata'; break;
-      default: break;
+    switch (this.clusterFormat) {
+      case 6: 
+          return 'TimeStamp';
+      case 7:
+          return 'Digitaldata';
+      case 9:
+          return 'Dynamicdata';
+      default:
+          return `0x${this.clusterFormat.toString(16)}`;
     }
+  }
 
-    this.addPropertyNumber(VCTPAttributeType.ClusterFormat, tmp);
-    this.addPropertyString(VCTPAttributeType.ClusterFormatStr, tmpStr);
+  public parse(reader: VirtualFile, version: ViVersion) {
+    this.clusterFormat = reader.readUInt16BE();
     this.paresLabel(reader);
   }
 

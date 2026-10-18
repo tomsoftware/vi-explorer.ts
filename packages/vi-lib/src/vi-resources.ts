@@ -34,7 +34,7 @@ export class ViResources {
     for (let i = 0; i < resourcesCount; i++) {
 
       // Read basic resource information
-      const name = resourceHeaderReader.readAsciiString(4);
+      const name = resourceHeaderReader.readString(4).asAscii;
       const count = resourceHeaderReader.readUInt32BE() + 1;
       // not sure about versions before 8.0
       const headerOffset = resourceHeaderReader.readUInt32BE() + resourcesHeader.resourceListOffset;

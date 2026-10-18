@@ -3,16 +3,17 @@ import { LinkObjectBase } from "./link-object-base";
 import { ViVersion } from "../vi-version";
 import { Logger } from "@tomsoftware/logger";
 import { LinkObjectFactory } from "./link-object-factory";
+import { ByteString } from "@tomsoftware/virtual-fs/src/binary-string";
 
 export abstract class LinkSaveInfoBasic extends LinkObjectBase {
   private static loggerLinkSave = new Logger('LinkSaveInfoBasic');
-  public linkSaveQualName: string[] = [];
+  public linkSaveQualName: ByteString[] = [];
   public linkSavePathRef: LinkObjectBase | null = null;
   public linkSaveFlag = 0;
 
 
-  protected readQualifiedName(reader: VirtualFile): string[] {
-    const items: string[] = [];
+  protected readQualifiedName(reader: VirtualFile): ByteString[] {
+    const items: ByteString[] = [];
 
     const count = reader.readUInt32BE();
     if (count > 4095) {
@@ -27,14 +28,14 @@ export abstract class LinkSaveInfoBasic extends LinkObjectBase {
 
     for (let i = 0; i < count; i++) {
       const length = reader.readByte();
-      items.push(reader.readAsciiString(length));
+      items.push(reader.readString(length));
     }
 
     return items;
   }
 
   protected readPathRef(reader: VirtualFile, version: ViVersion): LinkObjectBase | null {
-    const ident = reader.readAsciiString(4);
+    const ident = reader.readString(4).asAscii;
 
     const parser = LinkObjectFactory.create(ident);
     if (parser == null) {

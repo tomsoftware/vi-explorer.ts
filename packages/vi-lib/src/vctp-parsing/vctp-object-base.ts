@@ -1,11 +1,9 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { VirtualFile, ByteString } from '@tomsoftware/virtual-fs';
 import { ViVersion } from '../vi-version';
-import { VCTPAttribute } from './vctp-attribute';
 import { VCTPClientRef } from './vctp-client-ref';
 import { VCTPMainType, VCTPType } from './vctp-types';
 import { VCTPValueEntry } from './vctp-value-entry';
 import { Logger } from '@tomsoftware/logger';
-import { VCTPAttributeType } from './vctp-attribute-type';
 
 export type BaseTypeInfo = {
   offset: number,
@@ -39,9 +37,8 @@ export abstract class VCTPObjectBase {
   public readonly length;
   public readonly flags;
 
-  public label = '';
+  public label: ByteString = ByteString.empty;
 
-  public readonly attributes: VCTPAttribute[] = [];
   public readonly children: VCTPClientRef[] = [];
   public readonly values: VCTPValueEntry[] = [];
 
@@ -98,12 +95,6 @@ export abstract class VCTPObjectBase {
 
   public abstract parse(reader: VirtualFile, version: ViVersion, factory: IObjectFactory): void;
 
-  protected addPropertyNumber(propertyType: VCTPAttributeType, value: number): void {
-    this.attributes.push(
-      new VCTPAttribute(propertyType, value, 'number')
-    );
-  }
-
 
   /** Return the count of groups-type defined by this type definition */
   public countGroups(): GroupCounts {
@@ -130,13 +121,6 @@ export abstract class VCTPObjectBase {
     return result;
   }
 
-
-  protected addPropertyString(propertyType: number, value: string): void {
-    this.attributes.push(
-      new VCTPAttribute(propertyType, value, 'string')
-    );
-  }
-
   protected paresLabel(reader: VirtualFile) {
      if ((this.flags & 0x40) === 0) {
       return;
@@ -146,11 +130,15 @@ export abstract class VCTPObjectBase {
     const leftLength = this.length - (reader.tell() - this.offset);
 
     if (leftLength >= length) {
-      this.label = reader.readAsciiString(length);
+      this.label = reader.readString(length);
     } else {
       VCTPObjectBase.logging.error(`Caption/Label size mismatch (${leftLength - length} - len: ${length} - size: ${this.length}) of type:0x${this.type.toString(16)} [index=${this.index}] Error @ ${this.offset}`);
     }
+  }
 
+  /** returns additional attributes this vctp object has */
+  public getAttributes(): readonly [string, string | number][] {
+    return [];
   }
 
   protected buildXmlAttributes(): string {
@@ -165,8 +153,9 @@ export abstract class VCTPObjectBase {
       parts.push(`label='${this.label}'`);
     }
 
-    for (const attr of this.attributes) {
-      parts.push(`${attr.name}='${VCTPObjectBase.escapeXml(String(attr.value))}'`);
+    const attributes = this.getAttributes();
+    for (const attr of attributes) {
+      parts.push(`${attr[0]}='${VCTPObjectBase.escapeXml(String(attr[1]))}'`);
     }
 
     return parts.join(' ');

@@ -1,10 +1,10 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { VirtualFile, ByteString } from '@tomsoftware/virtual-fs';
 import { LinkObjectBase } from '../link-object-base';
 import { ViVersion } from '../../vi-version';
 
 export class PTH0 extends LinkObjectBase {
   public static readonly type = 'PTH0';
-  public pathParts: string[] = [];
+  public pathParts: ByteString[] = [];
   public tpVal = 0;
   public canZeroFill = false;
 
@@ -18,7 +18,7 @@ export class PTH0 extends LinkObjectBase {
 
     for (let i = 0; i < count; i++) {
       const length = reader.readByte();
-      this.pathParts.push(reader.readAsciiString(length));
+      this.pathParts.push(reader.readString(length));
     }
 
     if (this.canZeroFill && this.tpVal === 0 && this.pathParts.length === 0) {
