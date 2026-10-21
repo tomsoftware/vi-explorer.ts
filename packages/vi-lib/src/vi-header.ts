@@ -34,15 +34,12 @@ export interface ResourcesListHeader {
 
 export class ViHeader {
   private static logging = new Logger('ViHeader');
-  private reader: VirtualFile;
 
   public baseHeader: BaseViHeader | null = null;
   public resourcesHeader: ResourcesListHeader | null = null;
   public fileName: ByteString | null = null;
 
   constructor(reader: VirtualFile) {
-    this.reader = reader;
-
     // find and read basic header
     this.baseHeader = this.findLastBasicHeader(reader);
     if (this.baseHeader == null) {
@@ -54,9 +51,9 @@ export class ViHeader {
     this.resourcesHeader = this.readResourceHeader(reader, this.baseHeader);
 
     // read resource headers - ??
-    this.fileName = this.readFileName(reader);
+    this.fileName = this.readFileName(reader, this.resourcesHeader, this.baseHeader);
 
-    ViHeader.logging.log('Read VI header with internal name: ' + this.fileName);
+    ViHeader.logging.log('Read VI header with internal name: ' + this.fileName.asAscii);
   }
 
   /** Find and read the last basic header of this VI file */
@@ -81,7 +78,8 @@ export class ViHeader {
     return header;
   }
 
-  private readFileName(reader: VirtualFile): ByteString {
+  private readFileName(reader: VirtualFile, header: ResourcesListHeader, basicHeader: BaseViHeader): ByteString {
+    reader.seek(basicHeader.rsrcOffset + header.resourceListSize);
     const size = reader.readByte();
     return reader.readString(size);
   }

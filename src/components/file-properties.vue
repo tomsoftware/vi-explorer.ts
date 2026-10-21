@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { IconReader, ViFile, ViPassword } from '@tomsoftware/vi-lib';
+import { IconReader, TerminalPattern, ViFile, ViPassword } from '@tomsoftware/vi-lib';
 import ViResourceTable from './vi-resource-table.vue';
 import VctpTree from './vctp-tree.vue';
 import { VirtualFS } from '@tomsoftware/virtual-fs';
@@ -23,6 +23,7 @@ type passwordInfos = {
 
 const size = ref<number | null>(null);
 const img = ref<string | null>(null);
+const imgTerminal = ref<string | null>(null);
 const passwordHash = ref<passwordInfos>({psw: '', hash: ''});
 const version = ref<string>('');
 const libPasswordHash = ref<string>('');
@@ -41,6 +42,17 @@ function getIconImage(vi: ViFile): string | null {
     }
 
     return null;
+}
+
+/** return a SVG image of the terminal pattern */
+function getTerminalImage(vi: ViFile): string | null {
+  const typeDef = vi.getTerminalDefinition();
+  if (typeDef == null) {
+    return null;
+  }
+
+  const pattern = new TerminalPattern();
+  return pattern.toSvg(typeDef.terminalPattern, typeDef.terminalPermutation);
 }
 
 /** Read password information */
@@ -88,6 +100,7 @@ async function loadFileProperties() {
     img.value = getIconImage(viFile);
     passwordHash.value = getPasswordInfo(viFile);
 
+    imgTerminal.value = getTerminalImage(viFile);
 
     const lvsr = viFile.getSaveRecord();
     /** read the file version of the VI */
@@ -130,6 +143,7 @@ function openContainerView() {
 function closeView() {
   emit('close')
 }
+
 </script>
 
 <template>
@@ -137,7 +151,10 @@ function closeView() {
     <h2>Properties</h2>
     <p><strong>Path:</strong> {{ props.filePath }}</p>
     <p><strong>Size:</strong> {{ size ?? '-' }} bytes</p>
+
     <img v-if="img" :src="img" />
+    
+    <div v-if="imgTerminal" v-html="imgTerminal"></div>
 
     <h3>VI Info</h3>
     <div class="vi-info">

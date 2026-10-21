@@ -10,6 +10,7 @@ import { LinkedObjectContainer } from './container/linked-object-container';
 import { CONP } from './container/conp';
 import { CPC2 } from './container/cpc2';
 import { LIBN } from './container/libn';
+import { VCTPObjectTerminal } from './vctp-parsing/vctp-object-terminal';
 
 export class ViFile {
   private static logging = new Logger('ViFile');
@@ -142,6 +143,27 @@ export class ViFile {
     const reader = container?.getReader(true) ?? null;
     this.vctp = new VCTP(reader, this.version);
     return this.vctp;
+  }
+
+  /** Returns the type definition of the Terminal/Connector of this VI */
+  public getTerminalDefinition(): VCTPObjectTerminal | null {
+    const conp = this.getCONP();
+    if (conp == null) {
+      return null;
+    }
+    const terminalId = conp.first;
+    const type = this.getVCTP().getById(terminalId);
+    if (type == null) {
+      ViFile.logging.warn('Unable to find terminal-type definition in VI with ID ' + terminalId);
+      return null;
+    }
+
+    if (!(type instanceof VCTPObjectTerminal)) {
+      ViFile.logging.warn('Type definition with ID ' + terminalId +' has wrong type: '+ type.mainTypeName);
+      return null;
+    }
+
+    return type;
   }
 
 }

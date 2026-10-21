@@ -35,9 +35,19 @@ export class ViPassword {
     this.bdpw = new BDPW(reader ?? null);
   }
 
+  /** Check if the BDPW hashes are matching this vi file by recalculation the hashes and comparing */
+  public checkHashesAreValid(): boolean {
+    const result = this.calcHashesForFile();
+    if (result == null) {
+      return false;
+    }
+    // check calculated hashes against file hashes
+    return result.hash1.compare(this.bdpw.hash1) && result.hash2.compare(this.bdpw.hash2);
+  }
+
   /** Calculates the hashes for this VI for a given password-hash */
-  public calcHashes(password: Md5) {
-    const hash1 = this.calcHash1(password);
+  public calcHashes(passwordHash: Md5) {
+    const hash1 = this.calcHash1(passwordHash);
     if (hash1 == null) {
       ViPassword.logging.error('Unable to calculate file hashes!');
       return null;
@@ -49,7 +59,7 @@ export class ViPassword {
     }
 
     return {
-      password,
+      passwordHash,
       hash1,
       hash2,
     }
@@ -68,7 +78,7 @@ export class ViPassword {
   }
 
   /** Recalculate the Hash1 for this VI for a given password-hash */
-  public calcHash1(passwordHash: Md5) {
+  public calcHash1(passwordHash: Md5): Md5 | null {
     const viResources = this.vi.resources;
 
     const hash1 = Md5.stream();
@@ -109,9 +119,9 @@ export class ViPassword {
     // Add Terminal information
     // - not sure when to use CPC2 and when CONP
     if (this.vi.version.compareTo(12) >= 0) {
-      const cpc2 = this.vi.getCONP();
-      if (cpc2 != null) {
-        const terminalId = cpc2.first;
+      const conp = this.vi.getCONP();
+      if (conp != null) {
+        const terminalId = conp.first;
         const terminalTypeDefinition = this.vi.getVCTP().getById(terminalId); 
         if (terminalTypeDefinition == null) {
           ViPassword.logging.error('Unable to get terminal Type definition!');

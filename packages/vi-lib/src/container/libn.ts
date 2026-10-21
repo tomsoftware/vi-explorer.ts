@@ -21,7 +21,12 @@ export class LIBN {
     this.reader.seek(0);
 
     const names: ByteString[] = [];
-    const count = this.reader.readUInt32LE();
+    const count = this.reader.readUInt32BE();
+    if (count > 500) {
+      LIBN.logging.error('Unable to get number of names form LIBN! Count=' + count);
+      return [];
+    }
+
     for (let i = 0; i < count; i++) {
       const len = this.reader.readByte();
       names.push(this.reader.readString(len));

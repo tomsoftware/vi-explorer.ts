@@ -5,7 +5,15 @@ import { VCTPClientRef } from './vctp-client-ref';
 
 export class VCTPObjectTerminal extends VCTPObjectBase {
   public terminalFlags = 0;
-  public terminalPattern = 0;
+  public terminalPatternValue = 0;
+
+  public get terminalPattern() {
+    return (this.terminalPatternValue >> 3);
+  }
+
+  public get terminalPermutation() {
+    return (this.terminalPatternValue & 7);
+  }
 
   public parse(reader: VirtualFile, version: ViVersion, factory: IObjectFactory) {
     const count = reader.readUInt16BE();
@@ -20,7 +28,7 @@ export class VCTPObjectTerminal extends VCTPObjectBase {
     }
 
     this.terminalFlags = reader.readUInt16BE();
-    this.terminalPattern = reader.readUInt16BE();
+    this.terminalPatternValue = reader.readUInt16BE();
 
     if (version.compareTo(8, 0) >= 0) {
       const unknown = reader.readUInt16BE();
@@ -43,7 +51,7 @@ export class VCTPObjectTerminal extends VCTPObjectBase {
   public override getAttributes(): readonly [string, string | number][] {
     return [
       ['terminalFlags', this.terminalFlags],
-      ['terminalPattern', this.terminalPattern],
+      ['terminalPattern', this.terminalPatternValue],
     ]
   }
 }

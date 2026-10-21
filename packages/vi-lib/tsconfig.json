@@ -4,11 +4,12 @@
         "composite": true,
         "declaration": true,
         "outDir": "dist",
+        "types": ["node"],
         "paths": {
             "@tomsoftware/logger": ["../../packages/logger/src"],
             "@tomsoftware/virtual-fs": ["../../packages/virtual-fs/src"],
         }
     },
-    "include": ["src/**/*.ts", "index.ts"],
+    "include": ["src/**/*.ts", "index.ts", "tests/vi-file-load.test.ts"],
     "exclude": ["node_modules"]
 }

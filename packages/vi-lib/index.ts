@@ -12,6 +12,7 @@ export * from './src/vi-save-record';
 export * from './src/vi-version';
 export * from './src/container/linked-object-container';
 export * from './src/container/vctp';
+export * from './src/terminal-pattern';
 
 export * from './src/link-obj-refs/link-object-factory';
 export * from './src/link-obj-refs/object-types/lvin';
@@ -20,3 +21,5 @@ export * from './src/link-obj-refs/object-types/pth0';
 export * from './src/link-obj-refs/object-types/vicc';
 export * from './src/link-obj-refs/object-types/vilb';
 export * from './src/link-obj-refs/object-types/vivi';
+
+export * from './src/utils/md5';
