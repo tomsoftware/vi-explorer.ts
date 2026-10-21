@@ -10,14 +10,19 @@ export class VCTP {
 
   private readonly objects: VCTPObjectBase[] = [];
   private readonly indexMap: Array<number> = [];
- 
+  /** offset in file where the ID-Table starts */
+  private idTableOffset = -1;
+
   constructor(reader: VirtualFile | null, version: ViVersion) {
     if (reader == null) {
       VCTP.logging.error('File has no connector information!');
       return;
     }
 
+    // VCTP layout:
+    // 1. Type descriptions
     this.objects = this.parseTypeDefinitions(reader, version);
+    // 2. Type-Id-Table
     this.indexMap = this.parseIdList(reader);
   }
 
@@ -26,9 +31,9 @@ export class VCTP {
     return this.objects[index] ?? null;
   }
 
-  /** returns one type definition by it's id */
+  /** returns one type definition by its ID (1-based) */
   public getById(id: number): VCTPObjectBase | null {
-    // indexes are 1 based in VIs
+    // Type IDs are 1-based in the VI format.
     const index = (this.indexMap[id - 1]);
     if (index == null) {
       return null;
@@ -36,11 +41,13 @@ export class VCTP {
     return this.objects[index] ?? null;
   }
 
-  /** Pars a map of "index <-> id" */
+  /** Parse a map of "index <-> id" */
   private parseIdList(reader: VirtualFile) {
+
+    reader.seek(this.idTableOffset);
     const indexMap: number[] = [];
     const count = this.readVariableSizeFieldU2p2(reader);
-    for (let i = 0; i< count; i++) {
+    for (let i = 0; i < count; i++) {
       const id = this.readVariableSizeFieldU2p2(reader);
       indexMap.push(id);
     }
@@ -61,7 +68,6 @@ export class VCTP {
     const factory = new VCTPObjectFactory();
 
     reader.seek(0);
-    // read root object count
     const count = reader.readUInt32BE();
     let pos = reader.tell();
 
@@ -69,7 +75,7 @@ export class VCTP {
 
     // read all root objects
     for (let i = 0; i < count; i++) {
-      const length = reader.readUInt16BE();
+      const length = this.readVariableSizeFieldU2p2(reader);
 
       if (length < 4) {
         VCTP.logging.error(`Internal error: wrong block size at object ${i}!`);
@@ -94,10 +100,16 @@ export class VCTP {
       reader.seek(pos);
     }
 
-    // read type specific values
+    this.idTableOffset = pos;
+
+    // Now we parse the types. Doing this after the parsing of the root objects
+    //   is important to keep the indexing of the elements cause parsing can also create
+    //   new objects in "factory.objects" e.g. by a cluster but this need to be sorted
+    //   behind the root-objects
+    const subReader = reader.createSubReader(0);
     for (const newObject of rootObjects) {
-      reader.seek(newObject.offset);
-      newObject.parse(reader, version, factory);
+      subReader.seek(newObject.offset);
+      newObject.parse(subReader, version, factory);
     }
 
     return factory.objects;

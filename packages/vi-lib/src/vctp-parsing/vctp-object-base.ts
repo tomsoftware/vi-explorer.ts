@@ -150,7 +150,7 @@ export abstract class VCTPObjectBase {
     ];
 
     if (this.label) {
-      parts.push(`label='${this.label}'`);
+      parts.push(`label='${this.label.asUtf8}'`);
     }
 
     const attributes = this.getAttributes();

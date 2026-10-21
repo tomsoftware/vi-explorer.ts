@@ -1,10 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { BufferedFile, ByteString } from '@tomsoftware/virtual-fs';
+import { BufferedFile } from '@tomsoftware/virtual-fs';
 import { ViFile } from '../src/vi-file';
 import { ViPassword } from '../src/vi-password';
-import { Md5 } from '../src/utils/md5';
 
 const fixturePath = fileURLToPath(new URL('../../../public/test-files/86_test-vi-2.vi', import.meta.url));
 const vi86FileBytes = new Uint8Array(readFileSync(fixturePath));
