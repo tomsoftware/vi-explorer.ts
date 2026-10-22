@@ -23,4 +23,8 @@ export class VCTPObjectCluster extends VCTPObjectBase {
   public get typeGroup(): TypeGroup {
     return this.type == VCTPType.ClusterNumFixPoint ? TypeGroup.Number : TypeGroup.Container;
   }
+
+  public override get connectorColor(): string {
+    return 'rgb(255, 11, 255)';
+  }
 }

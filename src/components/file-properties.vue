@@ -52,7 +52,10 @@ function getTerminalImage(vi: ViFile): string | null {
   }
 
   const pattern = new TerminalPattern();
-  return pattern.toSvg(typeDef.terminalPattern, typeDef.terminalPermutation);
+  return pattern.toSvg(
+    typeDef.terminalPattern, typeDef.terminalRotation, typeDef.terminalFlip,
+    (index) => typeDef.children[index].target
+  );
 }
 
 /** Read password information */

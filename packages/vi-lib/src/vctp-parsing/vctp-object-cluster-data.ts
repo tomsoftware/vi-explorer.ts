@@ -26,4 +26,8 @@ export class VCTPObjectClusterData extends VCTPObjectBase {
   public get typeGroup(): TypeGroup {
     return TypeGroup.Unknown;
   }
+
+  public override get connectorColor(): string {
+    return 'rgb(160, 64, 0)';
+  }
 }

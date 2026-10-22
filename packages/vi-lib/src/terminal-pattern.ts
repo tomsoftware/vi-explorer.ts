@@ -1,6 +1,7 @@
 import { Logger } from "@tomsoftware/logger";
+import { VCTPObjectBase } from "./vctp-parsing/vctp-object-base";
 
-type TerminalBound = {
+export type TerminalBound = {
   left: number;
   top: number;
   right: number;
@@ -16,7 +17,7 @@ export class TerminalPattern {
    *   Bits 0-1: Rotation (0-3 quarter-turns)
    *   Bit 2:    Vertical reflection
    */
-  public getBounds(patternId: number, permutation: number = 0): TerminalBound[] {
+  public getBounds(patternId: number, rotation: number, flip: number | boolean): TerminalBound[] {
     if (TerminalPattern.terminalBounds[patternId] === undefined) {
       TerminalPattern.logging.warn('Invalid/unknown pattern id '+ patternId);
       patternId = 0;
@@ -39,9 +40,7 @@ export class TerminalPattern {
       bottom = TerminalPattern.terminalBoundsValues[bottom];
 
       // rotate by 90 degrees per step.
-      const rot = permutation & 3;
-
-      for (let i = 0; i < rot; i++) {
+      for (let i = 0; i < rotation; i++) {
         const tmpVal = left;
         left = 32 - top;
         top = right;
@@ -50,7 +49,7 @@ export class TerminalPattern {
       }
 
       // Flip vertically.
-      if ((permutation & 4) > 0) {
+      if (flip) {
         top = 32 - top;
         bottom = 32 - bottom;
       }
@@ -61,12 +60,22 @@ export class TerminalPattern {
     return bounds;
   }
 
+  private static escapeHtml(str: string) {
+    return str.replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+  }
+
   /**
    * Generates an SVG representation of the terminal bounding boxes.
    * Corresponds to the previous GD image generation (32 × 32 pixels).
    */
-  public toSvg(patternNo: number, permutation: number = 0): string {
-    const terms = this.getBounds(patternNo, permutation);
+  public toSvg(patternNo: number, rotation: number, flip: number | boolean,
+    terminalObjectResolver: (index: number) => VCTPObjectBase | undefined
+  ): string {
+    const terms = this.getBounds(patternNo, rotation, flip);
 
     const rectangles = terms
       .map((b, i) => {
@@ -75,12 +84,17 @@ export class TerminalPattern {
         const width = Math.abs(b.right - b.left);
         const height = Math.abs(b.bottom - b.top);
 
-        //const fill = i === 0 ? "#ff0000" : "none";
-        const fill = 'none';
+        const info = terminalObjectResolver(i);
+        const fill = info?.connectorColor ?? 'none';
+        const tooltip = info?.tooltipText ?? '';
+        const escapedTooltip = TerminalPattern.escapeHtml(tooltip)
+
+        const title = tooltip ? `<title>${escapedTooltip}</title>` : '';
+
         return (
           `<rect x="${x}" y="${y}" ` +
           `width="${width}" height="${height}" ` +
-          `fill="${fill}" stroke="#000000" stroke-width="1" />`
+          `fill="${fill}" stroke="#000000" stroke-width="1">${title}</rect>`
         );
       })
       .join("\n");

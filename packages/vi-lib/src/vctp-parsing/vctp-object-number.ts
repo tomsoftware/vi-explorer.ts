@@ -1,6 +1,7 @@
 import { VirtualFile } from '@tomsoftware/virtual-fs';
 import { TypeGroup, VCTPObjectBase } from './vctp-object-base';
 import { ViVersion } from '../vi-version';
+import { VCTPType } from './vctp-types';
 
 export class VCTPObjectNumber extends VCTPObjectBase {
   public unknown: number = 0;
@@ -16,6 +17,14 @@ export class VCTPObjectNumber extends VCTPObjectBase {
 
   public get typeGroup(): TypeGroup {
     return TypeGroup.Number;
+  }
+
+  public override get connectorColor(): string {
+    if (this.type === VCTPType.NumberDBL) {
+      return 'rgb(226, 134, 13)';
+    }
+
+     return 'rgb(45, 45, 255)';
   }
   
 }

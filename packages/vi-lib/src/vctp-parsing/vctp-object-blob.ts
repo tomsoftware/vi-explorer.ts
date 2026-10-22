@@ -30,4 +30,12 @@ export class VCTPObjectBlob extends VCTPObjectBase {
     }
     return TypeGroup.Unknown;
   }
+
+  public override get connectorColor(): string {
+    if (this.type === VCTPType.Path || this.type === VCTPType.Picture) {
+      return 'rgb(1, 128, 128)';
+    }
+
+    return 'rgb(255, 11, 255)';
+  }
 }

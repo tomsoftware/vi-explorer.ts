@@ -47,4 +47,8 @@ export class VCTPObjectArray extends VCTPObjectBase {
   public get typeGroup(): TypeGroup {
     return TypeGroup.Unknown;
   }
+
+  public override get connectorColor(): string {
+    return this.children[0]?.target?.connectorColor ?? 'none';
+  }
 }

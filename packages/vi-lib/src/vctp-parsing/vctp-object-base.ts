@@ -67,6 +67,17 @@ export abstract class VCTPObjectBase {
     return VCTPMainType[this.mainType] ?? 'Unknown';
   }
 
+  /** Connector color used for this data type in the terminal image. */
+  public get connectorColor(): string {
+    return 'none';
+  }
+
+  /** Human-readable tooltip text for the connector rectangle. */
+  public get tooltipText(): string {
+    const label = this.label?.asUtf8?.trim();
+    return label ? label : this.typeName;
+  }
+
 
   constructor(index: number, baseTypeInfo: BaseTypeInfo) {
     this.index = index;

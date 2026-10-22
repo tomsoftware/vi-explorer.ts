@@ -99,6 +99,9 @@ export class VCTPObjectRef extends VCTPObjectBase {
     return TypeGroup.Unknown;
   }
 
+  public override get connectorColor(): string {
+    return 'rgb(1, 128, 128)';
+  }
 
   private readObjectPropertyRefQueue(reader: VirtualFile, factory: IObjectFactory): boolean {
     const count = reader.readUInt16BE();

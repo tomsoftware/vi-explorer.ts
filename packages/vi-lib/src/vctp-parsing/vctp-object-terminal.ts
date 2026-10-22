@@ -3,16 +3,24 @@ import { IObjectFactory, TypeGroup, VCTPObjectBase } from './vctp-object-base';
 import { ViVersion } from '../vi-version';
 import { VCTPClientRef } from './vctp-client-ref';
 
+/** Defines the type-definition of a Connector / Terminal of a VI */
 export class VCTPObjectTerminal extends VCTPObjectBase {
   public terminalFlags = 0;
   public terminalPatternValue = 0;
 
+  /** Index of the pattern used by this terminal / connector definition */
   public get terminalPattern() {
     return (this.terminalPatternValue >> 3);
   }
 
-  public get terminalPermutation() {
-    return (this.terminalPatternValue & 7);
+  /** returns the number of rotations of this connector-definition */
+  public get terminalRotation() {
+    return (this.terminalPatternValue & 3);
+  }
+
+  /** returns >0 if the connector-definition is horizontal flipped */
+  public get terminalFlip() {
+    return (this.terminalPatternValue >> 2) & 1;
   }
 
   public parse(reader: VirtualFile, version: ViVersion, factory: IObjectFactory) {
@@ -50,8 +58,10 @@ export class VCTPObjectTerminal extends VCTPObjectBase {
 
   public override getAttributes(): readonly [string, string | number][] {
     return [
-      ['terminalFlags', this.terminalFlags],
-      ['terminalPattern', this.terminalPatternValue],
+      ['flags', this.terminalFlags],
+      ['pattern', this.terminalPattern],
+      ['rot', this.terminalRotation],
+      ['flip', this.terminalFlip],
     ]
   }
 }

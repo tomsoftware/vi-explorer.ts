@@ -46,4 +46,8 @@ export class VCTPObjectTypeDef extends VCTPObjectBase {
   public get typeGroup(): TypeGroup {
     return TypeGroup.Unknown;
   }
+
+  public override get connectorColor(): string {
+    return 'rgb(193, 0, 97)';
+  }
 }
