@@ -1,4 +1,4 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { ViVersion } from '../../vi-version';
 import { OffsetTypedLinkObject } from '../offset-typed-link-object';
 import { LinkObjectBase } from '../link-object-base';
@@ -11,7 +11,7 @@ export class IUVI extends HeapToViLinkObject {
 
   public iuseStr: string = '';
 
-  public parseContainer(reader: VirtualFile, version: ViVersion) {
+  public parseContainer(reader: ViDataReader, version: ViVersion) {
 
     if (version.compareTo(8, 2) >= 0) {
         this.parseHeapToVILinkObject(reader, version);

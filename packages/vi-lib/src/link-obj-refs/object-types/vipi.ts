@@ -1,4 +1,4 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { ViVersion } from '../../vi-version';
 import { Logger } from '@tomsoftware/logger';
 import { LinkSaveInfoBasic } from '../link-save-info-base';
@@ -13,21 +13,21 @@ export class VIPI extends LinkSaveInfoBasic {
   public apiLinkCallParentNodes = 0;
   public apiLinkContent: string = '';
 
-  public parseContainer(reader: VirtualFile, version: ViVersion) {
+  public parseContainer(reader: ViDataReader, version: ViVersion) {
     super.parseLinkSaveInfo(reader, version);
 
     this.alignPaddingBytes(reader, 4);
 
-    this.apiLinkLibVersion = reader.readBytes(8);
+    this.apiLinkLibVersion = reader.readBytes(8, 'vipi.apiLinkLibVersion');
 
-    this.apiLinkIsInternal = reader.readByte();
+    this.apiLinkIsInternal = reader.readByte('vipi.apiLinkIsInternal');
 
     if (version.compareTo(8, 1) >= 0) {
-      this.apiLinkUnknown = reader.readByte();
+      this.apiLinkUnknown = reader.readByte('vipi.apiLinkUnknown');
     }
 
     if (version.compareTo(9, 0) >= 0) {
-      this.apiLinkCallParentNodes = reader.readByte();
+      this.apiLinkCallParentNodes = reader.readByte('vipi.apiLinkCallParentNodes');
     }
 
     this.apiLinkContent = this.readIntPrefixedString(reader);

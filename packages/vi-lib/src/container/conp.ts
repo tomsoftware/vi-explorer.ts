@@ -1,5 +1,5 @@
 import { Logger } from '@tomsoftware/logger';
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { ConnectorPanelBase } from './connector-panel-base';
 
 /**

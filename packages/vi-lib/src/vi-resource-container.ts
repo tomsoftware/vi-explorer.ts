@@ -1,6 +1,6 @@
-import { BufferedFile, VirtualFile } from '@tomsoftware/virtual-fs';
 import { unzlibSync } from 'fflate';
 import { Logger } from '@tomsoftware/logger';
+import { ViDataReader } from './vi-data-reader';
 
 /** A VI resource container is a basic container i a VI file  */
 export class ViResourceContainer {
@@ -15,22 +15,22 @@ export class ViResourceContainer {
   public INT3: number;
   public dataOffset: number;
   public INT4: number;
-  private reader: VirtualFile;
+  private reader: ViDataReader;
   /** size of first container */
   public firstSize: number;
 
-  constructor(reader: VirtualFile, name: string, count: number, headerOffset: number, dataSetOffset: number) {
+  constructor(reader: ViDataReader, name: string, count: number, headerOffset: number, dataSetOffset: number) {
     this.name = name;
     this.count = count;
     this.headerOffset = headerOffset;
 
     // read resource data header
     const headerReader = reader.createSubReader(headerOffset);
-    this.INT1 = headerReader.readUInt32BE();
-    this.INT2 = headerReader.readUInt32BE();
-    this.INT3 = headerReader.readUInt32BE();
-    this.dataOffset = dataSetOffset + headerReader.readUInt32BE();
-    this.INT4 = headerReader.readUInt32BE();
+    this.INT1 = headerReader.readUInt32('vi-resource-container.INT1');
+    this.INT2 = headerReader.readUInt32('vi-resource-container.INT2');
+    this.INT3 = headerReader.readUInt32('vi-resource-container.INT3');
+    this.dataOffset = dataSetOffset + headerReader.readUInt32('vi-resource-container.dataOffset');
+    this.INT4 = headerReader.readUInt32('vi-resource-container.INT4');
 
     ViResourceContainer.logging.log('Found container header "'+ name +'" at '+ headerOffset +' point to '+ this.dataOffset);
 
@@ -44,12 +44,12 @@ export class ViResourceContainer {
   }
 
   /** returns the full size of this container with all parts and part-headers */
-  public calculateContainerSize(reader: VirtualFile, count: number): number {
+  public calculateContainerSize(reader: ViDataReader, count: number): number {
     const lastPart = ViResourceContainer.getPartOffset(reader, count - 1);
     return lastPart.nextOffset;
   }
 
-  private static getPartOffset(reader: VirtualFile, index: number): {offset: number, size: number, nextOffset: number} {
+  private static getPartOffset(reader: ViDataReader, index: number): {offset: number, size: number, nextOffset: number} {
     let offset = 0;
     let nextOffset = 0;
     let size = 0;
@@ -63,7 +63,7 @@ export class ViResourceContainer {
       offset = nextOffset;
       reader.seek(offset);
 
-      size = reader.readUInt32BE();
+      size = reader.readUInt32('vi-resource-container.part-size');
 
       nextOffset += size;
 
@@ -82,7 +82,7 @@ export class ViResourceContainer {
   }
 
   /** return a file read to the content of this resource */
-  public getReader(useCompression = true, index = 0): VirtualFile | null {
+  public getReader(useCompression = true, index = 0): ViDataReader | null {
     const partInfo = ViResourceContainer.getPartOffset(this.reader, index);
 
     if (this.reader.eof()) {
@@ -95,11 +95,11 @@ export class ViResourceContainer {
       return this.reader.createSubReader(partInfo.offset, partInfo.size);
     }
 
-    const unpackedSize = this.reader.readUInt32BE();
+    const unpackedSize = this.reader.readUInt32('vi-resource-container.unpacked-size');
 
     // decompress
     this.reader.seek(partInfo.offset + 4);
-    const buffer = this.reader.readBytes(partInfo.size - 4);
+    const buffer = this.reader.readBytes(partInfo.size - 4, 'vi-resource-container.compressed-data');
 
     let result: Uint8Array;
     try {
@@ -114,6 +114,6 @@ export class ViResourceContainer {
     }
 
     // return uncompressed data
-    return new BufferedFile(result);
+    return this.reader.createNew(result);
   }
 }

@@ -1,9 +1,9 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
 import { TypeGroup, VCTPObjectBase } from './vctp-object-base';
 import { ViVersion } from '../vi-version';
+import { ViDataReader } from '../vi-data-reader';
 
 export class VCTPObjectBool extends VCTPObjectBase {
-  public parse(reader: VirtualFile, version: ViVersion) {
+  public parse(reader: ViDataReader, version: ViVersion) {
     this.paresLabel(reader);
   }
 

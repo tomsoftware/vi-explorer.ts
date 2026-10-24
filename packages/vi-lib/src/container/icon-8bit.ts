@@ -1,4 +1,4 @@
-import { VirtualFile } from 'packages/virtual-fs';
+import { ViDataReader } from 'packages/virtual-fs';
 import { ViIcon } from './vi-icon';
 
 /** Read the "Icl8" chunk and convert it to a 32 bit image */
@@ -22,12 +22,12 @@ export class Icon8Bit extends ViIcon {
     0x110000, 0xEE00, 0xDD00, 0xBB00, 0xAA00, 0x8800, 0x7700, 0x5500, 0x4400, 0x2200, 0x1100, 0xEE, 0xDD, 0xBB, 0xAA, 0x88, 0x77, 0x55, 0x44,
     0x22, 0x11, 0xEEEEEE, 0xDDDDDD, 0xBBBBBB, 0xAAAAAA, 0x888888, 0x777777, 0x555555, 0x444444, 0x222222, 0x111111, 0x0];
 
-  private reader: VirtualFile;
+  private reader: ViDataReader;
   public width = 32;
   public height = 32;
   public bitPerPixel = 8;
 
-  constructor(reader: VirtualFile) {
+  constructor(reader: ViDataReader) {
     super();
     this.reader = reader;
   }
@@ -45,7 +45,7 @@ export class Icon8Bit extends ViIcon {
         break;
       }
 
-      const idx = this.reader.readByte();
+      const idx = this.reader.readByte('icon-8bit.pixel-index');
       const color = pal[idx] ?? 0;
       const r = (color >> 16) & 0xff;
       const g = (color >> 8) & 0xff;

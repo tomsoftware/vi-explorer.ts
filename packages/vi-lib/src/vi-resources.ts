@@ -1,7 +1,7 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
 import { Logger } from '@tomsoftware/logger';
 import { ViResourceContainer } from './vi-resource-container';
 import { ResourcesListHeader } from './vi-header';
+import { ViDataReader } from './vi-data-reader';
 
 /** Every VI file contains a list of resource containers/chunks */
 export class ViResources {
@@ -9,7 +9,7 @@ export class ViResources {
 
   public readonly resources: ViResourceContainer[] = [];
 
-  constructor(reader: VirtualFile, resourcesHeader: ResourcesListHeader | null) {
+  constructor(reader: ViDataReader, resourcesHeader: ResourcesListHeader | null) {
     if (resourcesHeader == null) {
       ViResources.logging.error('No resource header found in file ' + reader.getFilename());
       return;
@@ -22,7 +22,7 @@ export class ViResources {
     );
 
     // read number of resources
-    const resourcesCount = resourceHeaderReader.readUInt32BE() + 1;
+    const resourcesCount = resourceHeaderReader.readUInt32('vi-resources.resource-count') + 1;
     ViResources.logging.log('Found Resources: ' + resourcesCount);
 
     if (resourcesCount > 1000) {
@@ -34,10 +34,10 @@ export class ViResources {
     for (let i = 0; i < resourcesCount; i++) {
 
       // Read basic resource information
-      const name = resourceHeaderReader.readString(4).asAscii;
-      const count = resourceHeaderReader.readUInt32BE() + 1;
+      const name = resourceHeaderReader.readString(4, 'vi-resources.resource-name').asAscii;
+      const count = resourceHeaderReader.readUInt32('vi-resources.resource-count-for-' + name) + 1;
       // not sure about versions before 8.0
-      const headerOffset = resourceHeaderReader.readUInt32BE() + resourcesHeader.resourceListOffset;
+      const headerOffset = resourceHeaderReader.readUInt32('vi-resources.resource-header-offset') + resourcesHeader.resourceListOffset;
 
       // create resource container
       this.resources.push(new ViResourceContainer(
@@ -57,7 +57,7 @@ export class ViResources {
   }
 
   /** return a file reader of a resource by name */
-  public getReaderByName(name: string, compressed: boolean): VirtualFile | null {
+  public getReaderByName(name: string, compressed: boolean): ViDataReader | null {
     const resource = this.getResourceByName(name);
     if (resource == null) {
       return null;

@@ -1,5 +1,5 @@
 import { Logger } from '@tomsoftware/logger';
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { Md5 } from '../utils/md5';
 
 
@@ -26,19 +26,19 @@ export class LVSR {
     return (this.libPasswordHash.isValid && !this.libPasswordHash.isEmpty);
   }
 
-  constructor(reader: VirtualFile | null) {
+  constructor(reader: ViDataReader | null) {
     if (reader == null) {
         this.libPasswordHash = Md5.invalid;
         LVSR.logging.error('File has no LVSR container');
         return;
     }
 
-    this.versionNumber = reader.readUInt32LE();
-    this.unknown = reader.readUInt16LE();
-    this.flags = reader.readUInt16LE();
+    this.versionNumber = reader.readUInt32('lvsr.versionNumber');
+    this.unknown = reader.readUInt16('lvsr.unknown');
+    this.flags = reader.readUInt16('lvsr.flags');
 
     reader.seek(96);
-    this.libPasswordHash = Md5.hashBuffer(reader.readBytes(16));
+    this.libPasswordHash = Md5.hashBuffer(reader.readBytes(16, 'lvsr.libPasswordHash'));
   }
 
 }

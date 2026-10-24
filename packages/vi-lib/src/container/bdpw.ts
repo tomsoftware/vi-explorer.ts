@@ -1,5 +1,5 @@
 import { Logger } from '@tomsoftware/logger';
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { Md5 } from '../utils/md5';
 
 /** Contains information about the password set on the vi */
@@ -23,7 +23,7 @@ export class BDPW {
     return this.passwordHash.isEmpty;
   }
 
-  constructor(reader: VirtualFile | null) {
+  constructor(reader: ViDataReader | null) {
     if (reader == null) {
         BDPW.logging.error('File has no password information! - Version < 5.0?');
 
@@ -33,8 +33,8 @@ export class BDPW {
         return;
     }
 
-    this.passwordHash = Md5.fromHash(reader.readBytes(16));
-    this.hash1 = Md5.fromHash(reader.readBytes(16));
-    this.hash2 = Md5.fromHash(reader.readBytes(16));
+    this.passwordHash = Md5.fromHash(reader.readBytes(16, 'bdpw.passwordHash'));
+    this.hash1 = Md5.fromHash(reader.readBytes(16, 'bdpw.hash1'));
+    this.hash2 = Md5.fromHash(reader.readBytes(16, 'bdpw.hash2'));
   }
 }

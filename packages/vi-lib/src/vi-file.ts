@@ -11,13 +11,15 @@ import { CONP } from './container/conp';
 import { CPC2 } from './container/cpc2';
 import { LIBN } from './container/libn';
 import { VCTPObjectTerminal } from './vctp-parsing/vctp-object-terminal';
+import { LogManager, ViDataReader } from './vi-data-reader';
 
 export class ViFile {
   private static logging = new Logger('ViFile');
-  private readonly reader: VirtualFile;
+  private readonly reader: ViDataReader;
   private readonly header: ViHeader;
   public readonly resources: ViResources;
   private readonly viSaveRecord: ViSaveRecord;
+  public readonly logManager: LogManager;
   private vctp: VCTP | null = null;
 
   /** Return the internals file name of the VI */
@@ -31,9 +33,10 @@ export class ViFile {
   }
 
   constructor(reader: VirtualFile) {
-    this.reader = reader;
+    this.logManager = new LogManager();
+    this.reader = new ViDataReader(reader, this.logManager);
     this.header = new ViHeader(this.reader);
-    this.resources = new ViResources(reader, this.header.resourcesHeader);
+    this.resources = new ViResources(this.reader, this.header.resourcesHeader);
 
     this.viSaveRecord = new ViSaveRecord(this);
   }
@@ -85,7 +88,7 @@ export class ViFile {
   }
 
   /** return the reader for the block diagram */
-  public getBlockDiagramReader(): VirtualFile | null {
+  public getBlockDiagramReader(): ViDataReader | null {
     if (this.resources.resourceExists('BDHc')) {
       // for Version 10,11,12
       return this.resources.getReaderByName('BDHc', true);

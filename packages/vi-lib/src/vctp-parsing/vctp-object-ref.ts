@@ -1,8 +1,7 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { IObjectFactory, TypeGroup, VCTPObjectBase } from './vctp-object-base';
 import { ViVersion } from '../vi-version';
 import { VCTPClientRef } from './vctp-client-ref';
-
 
 export class VCTPObjectRef extends VCTPObjectBase {
   public refTypeName: string = '';
@@ -10,8 +9,8 @@ export class VCTPObjectRef extends VCTPObjectBase {
   public refControlFlags = 0;
   public refDataValFlags = 0;
 
-  public parse(reader: VirtualFile, version: ViVersion, factory: IObjectFactory) {
-    const refType = reader.readUInt16BE();
+  public parse(reader: ViDataReader, version: ViVersion, factory: IObjectFactory) {
+    const refType = reader.readUInt16('vctp-ref.type');
     this.refType = refType;
 
     let refTypeName = '[unknown]';
@@ -103,11 +102,11 @@ export class VCTPObjectRef extends VCTPObjectBase {
     return 'rgb(1, 128, 128)';
   }
 
-  private readObjectPropertyRefQueue(reader: VirtualFile, factory: IObjectFactory): boolean {
-    const count = reader.readUInt16BE();
+  private readObjectPropertyRefQueue(reader: ViDataReader, factory: IObjectFactory): boolean {
+    const count = reader.readUInt16('vctp-ref.queue.count');
     if (count <= 1) {
       for (let i = 0; i < count; i++) {
-        const index = reader.readUInt16BE();
+        const index = reader.readUInt16('vctp-ref.queue.index');
         this.children.push(new VCTPClientRef(index, factory.resolveObjectByIndex(index), 0));
       }
       return true;
@@ -117,16 +116,16 @@ export class VCTPObjectRef extends VCTPObjectBase {
     return false;
   }
 
-   private readObjectPropertyRefEventRegistration(reader: VirtualFile, factory: IObjectFactory): boolean {
-    const tmp1 = reader.readUInt16BE();
-    const count = reader.readUInt16BE();
+   private readObjectPropertyRefEventRegistration(reader: ViDataReader, factory: IObjectFactory): boolean {
+    const tmp1 = reader.readUInt16('vctp-ref.event-registration.tmp1');
+    const count = reader.readUInt16('vctp-ref.event-registration.count');
 
     if (tmp1 === 0 && count > 0) {
       for (let i = 0; i < count; i++) {
-        reader.readUInt16BE();
-        reader.readUInt16BE();
-        reader.readUInt16BE();
-        const index = reader.readUInt16BE();
+        reader.readUInt16('vctp-ref.event-registration.entry.1');
+        reader.readUInt16('vctp-ref.event-registration.entry.2');
+        reader.readUInt16('vctp-ref.event-registration.entry.3');
+        const index = reader.readUInt16('vctp-ref.event-registration.index');
         this.children.push(new VCTPClientRef(index, factory.resolveObjectByIndex(index), 0));
       }
       return true;
@@ -137,15 +136,15 @@ export class VCTPObjectRef extends VCTPObjectBase {
   }
 
 
-  private readObjectPropertyRefControl(reader: VirtualFile, factory: IObjectFactory): boolean {
-    const count = reader.readUInt16BE();
+  private readObjectPropertyRefControl(reader: ViDataReader, factory: IObjectFactory): boolean {
+    const count = reader.readUInt16('vctp-ref.control.count');
     if (count <= 1) {
       for (let i = 0; i < count; i++) {
-        const index = reader.readUInt16BE();
+        const index = reader.readUInt16('vctp-ref.control.index');
         this.children.push(new VCTPClientRef(index, factory.resolveObjectByIndex(index), 0));
       }
 
-      const flags = reader.readUInt32BE();
+      const flags = reader.readUInt32('vctp-ref.control.flags');
       this.refControlFlags = flags;
       return true;
     }
@@ -155,11 +154,11 @@ export class VCTPObjectRef extends VCTPObjectBase {
   }
 
 
-   private readObjectProperty_0Pre0Post(reader: VirtualFile, factory: IObjectFactory): boolean {
-    const count = reader.readUInt16BE();
+   private readObjectProperty_0Pre0Post(reader: ViDataReader, factory: IObjectFactory): boolean {
+    const count = reader.readUInt16('vctp-ref.0pre0post.count');
     if (count <= 1) {
       for (let i = 0; i < count; i++) {
-        const index = reader.readUInt16BE();
+        const index = reader.readUInt16('vctp-ref.0pre0post.index');
         this.children.push(new VCTPClientRef(index, factory.resolveObjectByIndex(index), 0));
       }
       return true;
@@ -169,16 +168,16 @@ export class VCTPObjectRef extends VCTPObjectBase {
     return false;
   }
 
-  private readObjectPropertyRefDataValue(reader: VirtualFile, factory: IObjectFactory): boolean {
+  private readObjectPropertyRefDataValue(reader: ViDataReader, factory: IObjectFactory): boolean {
 
-    const count = reader.readUInt16BE();
+    const count = reader.readUInt16('vctp-ref.data-value.count');
     if (count <= 1) {
       for (let i = 0; i < count; i++) {
-        const index = reader.readUInt16BE();
+        const index = reader.readUInt16('vctp-ref.data-value.index');
         this.children.push(new VCTPClientRef(index, factory.resolveObjectByIndex(index), 0));
       }
 
-      const value = reader.readByte();
+      const value = reader.readByte('vctp-ref.data-value.flags');
       this.refDataValFlags = value;
       return true;
     }

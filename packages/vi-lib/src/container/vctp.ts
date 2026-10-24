@@ -1,5 +1,5 @@
 import { Logger } from '@tomsoftware/logger';
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { ViVersion } from '../vi-version';
 import { VCTPObjectBase } from '../vctp-parsing/vctp-object-base';
 import { VCTPObjectFactory } from '../vctp-parsing/vctp-object-factory';
@@ -13,7 +13,7 @@ export class VCTP {
   /** offset in file where the ID-Table starts */
   private idTableOffset = -1;
 
-  constructor(reader: VirtualFile | null, version: ViVersion) {
+  constructor(reader: ViDataReader | null, version: ViVersion) {
     if (reader == null) {
       VCTP.logging.error('File has no connector information!');
       return;
@@ -42,48 +42,39 @@ export class VCTP {
   }
 
   /** Parse a map of "index <-> id" */
-  private parseIdList(reader: VirtualFile) {
+  private parseIdList(reader: ViDataReader) {
 
     reader.seek(this.idTableOffset);
     const indexMap: number[] = [];
-    const count = this.readVariableSizeFieldU2p2(reader);
+    const count = reader.readVarSizeNumber('count');
     for (let i = 0; i < count; i++) {
-      const id = this.readVariableSizeFieldU2p2(reader);
+      const id = reader.readVarSizeNumber('id');
       indexMap.push(id);
     }
     return indexMap;
   }
 
-  protected readVariableSizeFieldU2p2(reader: VirtualFile): number {
-    const value = reader.readUInt16BE();
-    if ((value & 0x8000) !== 0) {
-      return ((value & 0x7fff) << 16) | reader.readUInt16BE();
-    }
-    return value;
-  }
-
-
   /** Parse list of Type Descriptions in the file */
-  private parseTypeDefinitions(reader: VirtualFile, version: ViVersion): VCTPObjectBase[] {
+  private parseTypeDefinitions(reader: ViDataReader, version: ViVersion): VCTPObjectBase[] {
     const factory = new VCTPObjectFactory();
 
     reader.seek(0);
-    const count = reader.readUInt32BE();
+    const count = reader.readUInt32('vctp.root-count');
     let pos = reader.tell();
 
     const rootObjects: VCTPObjectBase[] = [];
 
     // read all root objects
     for (let i = 0; i < count; i++) {
-      const length = this.readVariableSizeFieldU2p2(reader);
+      const length = reader.readVarSizeNumber('object-length');
 
       if (length < 4) {
         VCTP.logging.error(`Internal error: wrong block size at object ${i}!`);
         return [];
       }
 
-      const flags = reader.readByte();
-      const objectType = reader.readByte();
+      const flags = reader.readByte('vctp.root.flags');
+      const objectType = reader.readByte('vctp.root.objectType');
       const offset = reader.tell();
       const newObject = factory.createObject({
         offset,

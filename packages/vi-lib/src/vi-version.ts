@@ -10,7 +10,12 @@ export class ViVersion {
   private readonly versionNumber: number;
 
   constructor(versionNumber: number) {
-    this.versionNumber = versionNumber;
+    const b1 = (versionNumber) & 0xff;
+    const b2 = (versionNumber >> 8) & 0xff;
+    const b3 = (versionNumber >> 16) & 0xff;
+    const b4 = (versionNumber >> 24) & 0xff;
+
+    this.versionNumber = (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
   }
 
   public get version(): number {

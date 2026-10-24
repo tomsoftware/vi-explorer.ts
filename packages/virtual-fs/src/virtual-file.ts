@@ -2,7 +2,7 @@ import { Logger } from "@tomsoftware/logger";
 import { BufferedFile } from "./buffered-file";
 import { ByteString } from "./byte-string";
 
-/** Abstract representation of a file */
+/** Abstract representation of a file reader */
 export abstract class VirtualFile {
     private static readonly logger = new Logger(VirtualFile.name);
     protected offset = 0;
@@ -21,6 +21,7 @@ export abstract class VirtualFile {
     /** Get the length of the file */
     public abstract length(): number;
 
+    /** Create a new instance of this file reader */
     public abstract clone(): VirtualFile;
 
     /** Returns the number of bytes left in this buffer */
@@ -111,7 +112,6 @@ export abstract class VirtualFile {
             (bytes[1])
         );
     }
-
 
     /** Read a single byte from the file */
     public readByte(): number {

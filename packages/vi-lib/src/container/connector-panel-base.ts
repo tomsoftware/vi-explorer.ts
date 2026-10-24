@@ -1,5 +1,5 @@
 import { Logger } from "@tomsoftware/logger";
-import { VirtualFile } from "@tomsoftware/virtual-fs";
+import { ViDataReader } from "../vi-data-reader";
 
 export class ConnectorPanelBase {
   private static logging = new Logger('ConnectorPanelBase');
@@ -17,7 +17,7 @@ export class ConnectorPanelBase {
     return value;
   }
 
-  constructor(reader: VirtualFile) {
+  constructor(reader: ViDataReader) {
     if (reader == null) {
         ConnectorPanelBase.logging.error('File has no Connector Panel!');
         return;
@@ -25,7 +25,7 @@ export class ConnectorPanelBase {
 
     /** read in all indices */
     while(!reader.eof()) {
-      this.indices.push(reader.readUInt16BE());
+      this.indices.push(reader.readUInt16('connector-panel-base.index'));
     }
   }
 }

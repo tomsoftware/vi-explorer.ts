@@ -1,4 +1,4 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { IObjectFactory, TypeGroup, VCTPObjectBase } from './vctp-object-base';
 import { ViVersion } from '../vi-version';
 import { VCTPClientRef } from './vctp-client-ref';
@@ -23,29 +23,29 @@ export class VCTPObjectTerminal extends VCTPObjectBase {
     return (this.terminalPatternValue >> 2) & 1;
   }
 
-  public parse(reader: VirtualFile, version: ViVersion, factory: IObjectFactory) {
-    const count = reader.readUInt16BE();
+  public parse(reader: ViDataReader, version: ViVersion, factory: IObjectFactory) {
+    const count = reader.readUInt16('vctp-terminal.count');
     if (count > 125) {
       VCTPObjectBase.logging.error(`Terminal count > 124 @ ${this.offset}`);
       return;
     }
 
     for (let i = 0; i < count; i++) {
-      const index = reader.readUInt16BE();
+      const index = reader.readUInt16('vctp-terminal.child-index');
       this.children.push(new VCTPClientRef(index, factory.resolveObjectByIndex(index), 0));
     }
 
-    this.terminalFlags = reader.readUInt16BE();
-    this.terminalPatternValue = reader.readUInt16BE();
+    this.terminalFlags = reader.readUInt16('vctp-terminal.flags');
+    this.terminalPatternValue = reader.readUInt16('vctp-terminal.pattern-value');
 
     if (version.compareTo(8, 0) >= 0) {
-      const unknown = reader.readUInt16BE();
+      const unknown = reader.readUInt16('vctp-terminal.unknown');
       for (let i = 0; i < count; i++) {
-        this.children[i].flags = reader.readUInt32BE();
+        this.children[i].flags = reader.readUInt32('vctp-terminal.child-flags');
       }
     } else {
       for (let i = 0; i < count; i++) {
-        this.children[i].flags = reader.readUInt16BE();
+        this.children[i].flags = reader.readUInt16('vctp-terminal.child-flags');
       }
     }
 

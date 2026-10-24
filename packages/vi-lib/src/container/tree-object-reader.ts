@@ -1,5 +1,5 @@
 import { TreeItem } from './tree-item';
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { Logger } from '@tomsoftware/logger';
 import { TreeItemObject } from './tree-item-object';
 import { TreeItemProperty } from './tree-item-property';
@@ -13,7 +13,7 @@ export enum FileVersion {
 export class TreeObjectReader {
   private static logging = new Logger('TreeObjectReader');
 
-  private static readHeader(reader: VirtualFile, version: FileVersion) {
+  private static readHeader(reader: ViDataReader, version: FileVersion) {
     let pos = -1;
     let dataLength = 0;
     let dataOffset = 0;
@@ -22,16 +22,16 @@ export class TreeObjectReader {
 
     // Read "Struct-Header"
     if (version === FileVersion.C) {
-      pos = reader.readUInt32BE();
+      pos = reader.readUInt32('tree-object-reader.pos');
       containerOffset = reader.tell();
 
       reader.seek(pos);
-      dataLength = reader.readUInt32BE();
+      dataLength = reader.readUInt32('tree-object-reader.dataLength');
 
       dataOffset = pos - dataLength;
       containerLength = pos - dataLength - containerOffset;
     } else if (version === FileVersion.B) {
-      containerLength = reader.readUInt32BE();
+      containerLength = reader.readUInt32('tree-object-reader.containerLength');
       containerOffset = reader.tell();
 
       dataOffset = containerLength + containerOffset;
@@ -44,7 +44,7 @@ export class TreeObjectReader {
     return [cRead, dRead];
   }
 
-  public static read(reader: VirtualFile, version: FileVersion): TreeItem | null {
+  public static read(reader: ViDataReader, version: FileVersion): TreeItem | null {
     const [cRead, dRead] = this.readHeader(reader, version);
 
     // build up a tree of objects
@@ -59,8 +59,8 @@ export class TreeObjectReader {
       //    OCPii iiiiiiii
       // o
 
-      const cmd1 = cRead.readByte();
-      const cmd2 = cRead.readByte();
+      const cmd1 = cRead.readByte('tree-object-reader.cmd1');
+      const cmd2 = cRead.readByte('tree-object-reader.cmd2');
 
       // console.log(pos + '  --  ' + cmd1 + ' -- ' + cmd2);
       const objectTypeId = ((cmd1 & 3) << 8) | cmd2;

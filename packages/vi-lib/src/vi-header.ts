@@ -1,5 +1,6 @@
-import { ByteString, VirtualFile } from '@tomsoftware/virtual-fs';
+import { ByteString } from '@tomsoftware/virtual-fs';
 import { Logger } from '@tomsoftware/logger';
+import { ViDataReader } from './vi-data-reader';
 
 export interface BaseViHeader {
     /** position of header in File */
@@ -39,7 +40,7 @@ export class ViHeader {
   public resourcesHeader: ResourcesListHeader | null = null;
   public fileName: ByteString | null = null;
 
-  constructor(reader: VirtualFile) {
+  constructor(reader: ViDataReader) {
     // find and read basic header
     this.baseHeader = this.findLastBasicHeader(reader);
     if (this.baseHeader == null) {
@@ -57,7 +58,7 @@ export class ViHeader {
   }
 
   /** Find and read the last basic header of this VI file */
-  private findLastBasicHeader(reader: VirtualFile): BaseViHeader | null {
+  private findLastBasicHeader(reader: ViDataReader): BaseViHeader | null {
     let curPos = 0;
     let lastPos = -1;
     let header: BaseViHeader | null = null;
@@ -78,36 +79,36 @@ export class ViHeader {
     return header;
   }
 
-  private readFileName(reader: VirtualFile, header: ResourcesListHeader, basicHeader: BaseViHeader): ByteString {
+  private readFileName(reader: ViDataReader, header: ResourcesListHeader, basicHeader: BaseViHeader): ByteString {
     reader.seek(basicHeader.rsrcOffset + header.resourceListSize);
-    const size = reader.readByte();
-    return reader.readString(size);
+    const size = reader.readByte('vi-header.file-name.length');
+    return reader.readString(size, 'vi-header.file-name');
   }
 
-  private readResourceHeader(reader: VirtualFile, basicHeader: BaseViHeader): ResourcesListHeader {
+  private readResourceHeader(reader: ViDataReader, basicHeader: BaseViHeader): ResourcesListHeader {
     reader.seek(basicHeader.resourceListOffset);
 
     return {
-      dataSetOffset: reader.readUInt32BE(),
-      dataSetSize: reader.readUInt32BE(),
-      dataSetINT1: reader.readUInt32BE(),
-      dataSetINT2: reader.readUInt32BE(),
-      dataSetINT3: reader.readUInt32BE(),
-      resourceListOffset: reader.readUInt32BE() + basicHeader.rsrcOffset,
-      resourceListSize: reader.readUInt32BE()
+      dataSetOffset: reader.readUInt32('vi-header.resource-header.dataSetOffset'),
+      dataSetSize: reader.readUInt32('vi-header.resource-header.dataSetSize'),
+      dataSetINT1: reader.readUInt32('vi-header.resource-header.dataSetINT1'),
+      dataSetINT2: reader.readUInt32('vi-header.resource-header.dataSetINT2'),
+      dataSetINT3: reader.readUInt32('vi-header.resource-header.dataSetINT3'),
+      resourceListOffset: reader.readUInt32('vi-header.resource-header.resourceListOffset') + basicHeader.rsrcOffset,
+      resourceListSize: reader.readUInt32('vi-header.resource-header.resourceListSize')
     };
   }
 
   /** read the basic header of the vi file */
-  private readBaseHeader(reader: VirtualFile, offset: number): BaseViHeader | null {
+  private readBaseHeader(reader: ViDataReader, offset: number): BaseViHeader | null {
     reader.seek(offset);
 
-    const identifier1 = reader.readString(6).asAscii;
-    const fileFormatVersion = reader.readUInt16BE();
-    const identifier3 = reader.readString(4).asAscii;
-    const identifier4 = reader.readString(4).asAscii;
-    const rsrcOffset = reader.readUInt32BE();
-    const rsrcSize = reader.readUInt32BE();
+    const identifier1 = reader.readString(6, 'vi-header.base-header.identifier1').asAscii;
+    const fileFormatVersion = reader.readUInt16('vi-header.base-header.fileFormatVersion');
+    const identifier3 = reader.readString(4, 'vi-header.base-header.identifier3').asAscii;
+    const identifier4 = reader.readString(4, 'vi-header.base-header.identifier4').asAscii;
+    const rsrcOffset = reader.readUInt32('vi-header.base-header.rsrcOffset');
+    const rsrcSize = reader.readUInt32('vi-header.base-header.rsrcSize');
     const resourceListOffset = reader.tell();
 
     if (identifier1 !== 'RSRC\r\n') {

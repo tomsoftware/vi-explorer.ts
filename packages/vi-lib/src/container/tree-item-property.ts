@@ -1,11 +1,11 @@
-import { VirtualFile, ByteString } from '@tomsoftware/virtual-fs';
+import { ViDataReader, ByteString } from '@tomsoftware/virtual-fs';
 import { Logger } from '@tomsoftware/logger';
 import { TreeItem, TreeObjectType } from './tree-item';
 
 export class TreeItemProperty extends TreeItem {
   private static logging = new Logger('TreeItemProperty');
 
-  constructor(objectTypeId: number, cmd1: number, pos: number, cRead: VirtualFile, dRead: VirtualFile) {
+  constructor(objectTypeId: number, cmd1: number, pos: number, cRead: ViDataReader, dRead: ViDataReader) {
     super(objectTypeId, pos);
 
     let argLen = cmd1 >> 5;
@@ -15,12 +15,12 @@ export class TreeItemProperty extends TreeItem {
     if (argLen > 6) {
       TreeItemProperty.logging.error('Error - Property length - >6  @ ' + pos);
     } else if (argLen === 6) {
-      argLen = cRead.readByte();
-      if (argLen === 255) argLen = cRead.readUInt16BE();
+      argLen = cRead.readByte('tree-item-property.argLen');
+      if (argLen === 255) argLen = cRead.readUInt16BE('tree-item-property.argLen.extended');
     } else if (argLen === 0) {
       // if (objectTypeId == 0x2D || objectTypeId == 0xD6 || objectTypeId == 0x4C || objectTypeId == 0x5F || objectTypeId == 0x20D || objectTypeId == 0x229 || objectTypeId == 0x4A || objectTypeId == 0x8B || objectTypeId == 0x87 || objectTypeId == 0x7A || objectTypeId == 0x1F || objectTypeId == 0x23 || objectTypeId == 0x76) {
       // console.error('argLen == 0 --> 8');
-      argStr = dRead.readString(8);
+      argStr = dRead.readString(8, 'tree-item-property.default-string');
       // }
       // else {
       // console.error('argLen == 0');
@@ -28,7 +28,7 @@ export class TreeItemProperty extends TreeItem {
     }
 
     if (argLen > 0) {
-      argStr = cRead.readString(argLen);
+      argStr = cRead.readString(argLen, 'tree-item-property.argStr');
     }
 
     this.value = argStr;

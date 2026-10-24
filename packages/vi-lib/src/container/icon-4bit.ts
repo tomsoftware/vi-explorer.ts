@@ -1,4 +1,4 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { ViIcon } from './vi-icon';
 
 /** Read the "Icl4" chunk and convert it to a 32 bit image */
@@ -8,12 +8,12 @@ export class Icon4Bit extends ViIcon {
     0x00FF00, 0x008000, 0x800000, 0x808000, 0xC0C0C0, 0x808080, 0x008080, 0x000000
   ];
 
-  private reader: VirtualFile;
+  private reader: ViDataReader;
   public width = 32;
   public height = 32;
   public bitPerPixel = 4;
 
-  constructor(reader: VirtualFile) {
+  constructor(reader: ViDataReader) {
     super();
     this.reader = reader;
   }
@@ -31,7 +31,7 @@ export class Icon4Bit extends ViIcon {
 
     let idx = 0;
     while (idx < count && !this.reader.eof()) {
-      const b = this.reader.readByte();
+      const b = this.reader.readByte('icon-4bit.pixel');
 
       // high nibble
       const hi = (b >> 4) & 0x0f;

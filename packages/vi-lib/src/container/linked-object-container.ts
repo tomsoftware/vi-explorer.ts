@@ -1,5 +1,5 @@
 import { Logger } from '@tomsoftware/logger';
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { LinkObjectContainerParser } from '../link-object-container-parser';
 import { LinkObjectBase } from '../link-obj-refs/link-object-base';
 import { ViVersion } from '../vi-version';
@@ -11,9 +11,9 @@ export class LinkedObjectContainer {
   private static logging = new Logger('LinkedObjectContainer');
   public header: LinkObjectBase | null = null;
   public objects: Array<LinkObjectBase | any> = [];
-  private reader: VirtualFile | null = null;
+  private reader: ViDataReader | null = null;
 
-  constructor(reader: VirtualFile | null, version: ViVersion) {
+  constructor(reader: ViDataReader | null, version: ViVersion) {
     if (reader == null) {
         LinkedObjectContainer.logging.error('File has no LinkObj Refs section!');
         return;

@@ -48,4 +48,5 @@ describe('ViFile loading / basic properties - v 8.6', () => {
     expect(result?.hash2?.toHex()).toBe(protection.bdpw.hash2.toHex());
     expect(result?.passwordHash?.toHex()).toBe(protection.bdpw.passwordHash.toHex());
   });
+
 });

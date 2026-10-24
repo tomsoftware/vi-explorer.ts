@@ -1,4 +1,4 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { Logger } from '@tomsoftware/logger';
 import { TreeItem, TreeObjectType } from './tree-item';
 import { TreeObjectHelper } from './tree-object-helper';
@@ -9,7 +9,7 @@ export class TreeItemObject extends TreeItem {
 
   private classTypeId = 0;
 
-  constructor(objectTypeId: number, cmd1: number, pos: number, cRead: VirtualFile, dRead: VirtualFile, version: FileVersion) {
+  constructor(objectTypeId: number, cmd1: number, pos: number, cRead: ViDataReader, dRead: ViDataReader, version: FileVersion) {
     super(objectTypeId, pos);
 
     cRead.seek(pos);
@@ -21,18 +21,18 @@ export class TreeItemObject extends TreeItem {
     let argLen = 1;
 
     if ((cmd1 & 4) === 0) {
-      const flags1 = cRead.readByte();
-      const newObjectTypeId = cRead.readByte();
+      const flags1 = cRead.readByte('tree-item-object.flags1');
+      const newObjectTypeId = cRead.readByte('tree-item-object.newObjectTypeId');
       argLen = (flags1 & 3);
     }
 
-    const data = cRead.readBytes(argLen);
+    const data = cRead.readBytes(argLen, 'tree-item-object.data');
     this.classTypeId = this.bytesToNumber(data);
 
     // --------------------------------------------------------------------
     // - Second Object Attribute - [ attribute="value" ] -//
     // --------------------------------------------------------------------
-    let dataLen = cRead.readByte();
+    let dataLen = cRead.readByte('tree-item-object.dataLen');
 
     if ((dataLen & 0xF0) === 0xF0) {
       // remove last char
@@ -56,20 +56,20 @@ export class TreeItemObject extends TreeItem {
       if (version === FileVersion.B) {
         // - VERSION_B -//
         argLen = 2;
-        const argStr = cRead.readBytes(argLen);
+        const argStr = cRead.readBytes(argLen, 'tree-item-object.prop.bytes-b');
         TreeItemObject.logging.log(TreeItemObject.bytesToHex(argStr));
         this.prop = argStr;
       } else {
         // - VERSION_C -//
-        const argStr = dRead.readBytes(dataLen);
+        const argStr = dRead.readBytes(dataLen, 'tree-item-object.prop.bytes-c');
         TreeItemObject.logging.log(TreeItemObject.bytesToHex(argStr));
         this.prop = argStr;
       }
     }
   }
 
-  private static readHex(reader: VirtualFile, length: number): string {
-    const buffer = reader.readBytes(length);
+  private static readHex(reader: ViDataReader, length: number): string {
+    const buffer = reader.readBytes(length, 'tree-item-object.hex');
     return this.bytesToHex(buffer);
   }
 

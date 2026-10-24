@@ -1,4 +1,4 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { ViVersion } from '../../vi-version';
 import { TypedLinkSaveInfoBase } from '../typed-link-save-info-base';
 
@@ -7,7 +7,7 @@ import { TypedLinkSaveInfoBase } from '../typed-link-save-info-base';
 export class VICC extends TypedLinkSaveInfoBase {
   public static readonly type = 'VICC';
 
-  public parseContainer(reader: VirtualFile, version: ViVersion) {
+  public parseContainer(reader: ViDataReader, version: ViVersion) {
     super.parseTypedLinkSaveInfo(reader, version);
   }
 }

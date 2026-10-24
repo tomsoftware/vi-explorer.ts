@@ -1,17 +1,17 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { TypeGroup, VCTPObjectBase } from './vctp-object-base';
 import { ViVersion } from '../vi-version';
 import { VCTPType } from './vctp-types';
 
 export class VCTPObjectBlob extends VCTPObjectBase {
-  public parse(reader: VirtualFile, version: ViVersion) {
+  public parse(reader: ViDataReader, version: ViVersion) {
 
     if (this.type == VCTPType.PascalString || this.type === VCTPType.CString) {
       this.paresLabel(reader);
       return;
     }
 
-    const tmp = reader.readUInt32BE();
+    const tmp = reader.readUInt32('vctp-blob.property');
     if (tmp === 0xffffffff || tmp === -1) {
       this.paresLabel(reader);
       return;

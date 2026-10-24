@@ -1,10 +1,10 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
 import { LinkObjectBase } from './link-obj-refs/link-object-base';
 import { ViVersion } from './vi-version';
 import { Logger } from '@tomsoftware/logger';
 import { LinkObjectFactory } from './link-obj-refs/link-object-factory';
 import { registerParsers } from './link-obj-refs/register-parsers';
 import { ObjectContainerHeader } from './link-obj-refs/object-container-header';
+import { ViDataReader } from './vi-data-reader';
 
 /** Parses a container using the Link-Objects format used by VI */
 export class LinkObjectContainerParser {
@@ -19,7 +19,7 @@ export class LinkObjectContainerParser {
   }
 
   /** parses a given file and returns a list of objects */
-  public parse(reader: VirtualFile | null) : {header: LinkObjectBase | null, objects: LinkObjectBase[]} {
+  public parse(reader: ViDataReader | null) : {header: LinkObjectBase | null, objects: LinkObjectBase[]} {
     let header: LinkObjectBase | null = null;
     const objects: Array<LinkObjectBase> = [];
     if (reader == null) {
@@ -29,24 +29,24 @@ export class LinkObjectContainerParser {
     LinkObjectContainerParser.logging.log('Parsing ' + reader.getFilename())
 
     // nextLinkInfo: expect 1 for the root
-    let nextLinkInfo = reader.readUInt16BE();
+    let nextLinkInfo = reader.readUInt16('link-object-container.root.nextLinkInfo');
     if (nextLinkInfo != 1) {
       LinkObjectContainerParser.logging.error('Expect root object link info! Got: (' + nextLinkInfo + ' != 1) in file: '+ reader.getFilename());
       return { header, objects };
     }
 
-    let ident = reader.readString(4).asAscii;
+    let ident = reader.readString(4, 'link-object-container.root.ident').asAscii;
     if (this.version.compareTo(14,0) < 0) {
       header = new ObjectContainerHeader(ident);
       header.parseContainer(reader, this.version);
     }
 
-    const count = reader.readUInt32BE();
+    const count = reader.readUInt32('link-object-container.object-count');
 
     // read each item in the container
     while (true) {
       // read next linkInfo marker -> expect 2 or 3
-      nextLinkInfo = reader.readUInt16BE();
+      nextLinkInfo = reader.readUInt16('link-object-container.object.nextLinkInfo');
       if (nextLinkInfo === 3) {
         // end of marker
         break;
@@ -61,7 +61,7 @@ export class LinkObjectContainerParser {
         break;
       }
 
-      ident = reader.readString(4).asAscii;
+      ident = reader.readString(4, 'link-object-container.object.ident').asAscii;
 
       // create parser for object data
       const obj = LinkObjectFactory.create(ident);

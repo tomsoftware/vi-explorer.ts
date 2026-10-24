@@ -1,9 +1,10 @@
-import { VirtualFile, ByteString } from '@tomsoftware/virtual-fs';
+import { ByteString } from '@tomsoftware/virtual-fs';
 import { ViVersion } from '../vi-version';
 import { VCTPClientRef } from './vctp-client-ref';
 import { VCTPMainType, VCTPType } from './vctp-types';
 import { VCTPValueEntry } from './vctp-value-entry';
 import { Logger } from '@tomsoftware/logger';
+import { ViDataReader } from '../vi-data-reader';
 
 export type BaseTypeInfo = {
   offset: number,
@@ -104,7 +105,7 @@ export abstract class VCTPObjectBase {
     return lines.join('\n');
   }
 
-  public abstract parse(reader: VirtualFile, version: ViVersion, factory: IObjectFactory): void;
+  public abstract parse(reader: ViDataReader, version: ViVersion, factory: IObjectFactory): void;
 
 
   /** Return the count of groups-type defined by this type definition */
@@ -132,16 +133,16 @@ export abstract class VCTPObjectBase {
     return result;
   }
 
-  protected paresLabel(reader: VirtualFile) {
+  protected paresLabel(reader: ViDataReader) {
      if ((this.flags & 0x40) === 0) {
       return;
      }
 
-    const length = reader.readByte();
+    const length = reader.readByte('vctp-object-base.label.length');
     const leftLength = this.length - (reader.tell() - this.offset);
 
     if (leftLength >= length) {
-      this.label = reader.readString(length);
+      this.label = reader.readString(length, 'vctp-object-base.label');
     } else {
       VCTPObjectBase.logging.error(`Caption/Label size mismatch (${leftLength - length} - len: ${length} - size: ${this.length}) of type:0x${this.type.toString(16)} [index=${this.index}] Error @ ${this.offset}`);
     }

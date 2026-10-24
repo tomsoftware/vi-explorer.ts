@@ -1,4 +1,4 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { ViVersion } from '../vi-version';
 import { Logger } from '@tomsoftware/logger';
 import { LinkSaveInfoBasic } from './link-save-info-base';
@@ -22,10 +22,10 @@ export abstract class TypedLinkSaveInfoBase extends LinkSaveInfoBasic {
   public viLinkUnknown5 = 0;
   public typedLinkFlags = 0;
 
-  protected parseVILinkRefInfo(reader: VirtualFile, version: ViVersion) {
+  protected parseVILinkRefInfo(reader: ViDataReader, version: ViVersion) {
     let flagBt = 0xff;
     if (version.compareTo(14, 0) >= 0) {
-      flagBt = reader.readByte();
+      flagBt = reader.readByte('typed-link-save-info.flagBt');
     }
 
     if (flagBt !== 0xff) {
@@ -35,21 +35,21 @@ export abstract class TypedLinkSaveInfoBase extends LinkSaveInfoBasic {
     }
     else {
       if (version.compareTo(8, 0) >= 0) {
-        this.viLinkUnknown2 = reader.readUInt32BE();
-        this.viLinkLibVersion = reader.readUInt32BE();
+        this.viLinkUnknown2 = reader.readUInt32('typed-link-save-info.viLinkUnknown2');
+        this.viLinkLibVersion = reader.readUInt32('typed-link-save-info.viLinkLibVersion');
       }
 
       if (version.compareTo(6, 0) >= 0) {
-        this.viLinkUnknown3 = reader.readUInt32BE();
-        this.viLinkUnknown4 = reader.readUInt32BE();
-        this.viLinkUnknown5 = reader.readUInt32BE();
+        this.viLinkUnknown3 = reader.readUInt32('typed-link-save-info.viLinkUnknown3');
+        this.viLinkUnknown4 = reader.readUInt32('typed-link-save-info.viLinkUnknown4');
+        this.viLinkUnknown5 = reader.readUInt32('typed-link-save-info.viLinkUnknown5');
       }
     }
 
   }
 
 
-  protected parseTypedLinkSaveInfo(reader: VirtualFile, version: ViVersion) {
+  protected parseTypedLinkSaveInfo(reader: ViDataReader, version: ViVersion) {
     if (version.compareTo(8, 0) >= 0) {
       this.parseLinkSaveInfo(reader, version);
 
@@ -61,7 +61,7 @@ export abstract class TypedLinkSaveInfoBase extends LinkSaveInfoBasic {
       this.parseVILinkRefInfo(reader, version)
 
       if (version.compareTo(12, 0) >= 0) {
-        this.typedLinkFlags = reader.readUInt32BE();
+        this.typedLinkFlags = reader.readUInt32('typed-link-save-info.typedLinkFlags');
       }
     }
     else {

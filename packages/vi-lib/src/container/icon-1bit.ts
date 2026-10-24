@@ -1,14 +1,14 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { ViIcon } from './vi-icon';
 
 /** Read  the "ICON" chunk and convert to 32 bit image */
 export class Icon1Bit extends ViIcon {
-  private reader: VirtualFile;
+  private reader: ViDataReader;
   public width = 32;
   public height = 32;
   public bitPerPixel = 1;
 
-  constructor(reader: VirtualFile) {
+  constructor(reader: ViDataReader) {
     super();
     this.reader = reader;
   }
@@ -21,7 +21,7 @@ export class Icon1Bit extends ViIcon {
     let idx = 0;
 
     while (idx < count && !this.reader.eof()) {
-      const b = this.reader.readByte();
+      const b = this.reader.readByte('icon-1bit.pixel');
       for (let bit = 7; bit >= 0 && idx < count; bit--) {
         const bitVal = ((b >> bit) & 0x01) === 1 ? 1 : 0;
         const base = idx * 4;

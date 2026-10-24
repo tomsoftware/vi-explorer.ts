@@ -1,4 +1,4 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 
 export interface LIVIObjectData {
   tag: string;
@@ -27,7 +27,7 @@ export abstract class LIVIObject {
   }
 
   // optional further parsing if needed
-  parseRemaining(_: VirtualFile): void {
+  parseRemaining(_: ViDataReader): void {
     return;
   }
 }

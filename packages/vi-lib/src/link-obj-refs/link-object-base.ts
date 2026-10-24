@@ -1,6 +1,7 @@
-import { VirtualFile, ByteString } from '@tomsoftware/virtual-fs';
+import { ByteString } from '@tomsoftware/virtual-fs';
 import { ViVersion } from '../vi-version';
 import { Logger } from '@tomsoftware/logger';
+import { ViDataReader } from '../vi-data-reader';
 
 /** Abstract base class for all Link-Objects */
 export abstract class LinkObjectBase {
@@ -12,7 +13,7 @@ export abstract class LinkObjectBase {
   }
 
   /** Aligns the current reader position to a given alignment */
-  protected alignPaddingBytes(reader: VirtualFile, alignment: number) {
+  protected alignPaddingBytes(reader: ViDataReader, alignment: number) {
     const current = reader.tell();
     const padding = (current % alignment);
     if (padding == 0) {
@@ -23,30 +24,12 @@ export abstract class LinkObjectBase {
     reader.seek(current + alignment - padding);
   }
 
-  protected readVariableSizeFieldU2p2(reader: VirtualFile): number {
-    const value = reader.readUInt16BE();
-    if ((value & 0x8000) !== 0) {
-      return ((value & 0x7fff) << 16) | reader.readUInt16BE();
-    }
-    return value;
-  }
-
   /** read a string prefixed with is 1 byte size */
-  protected readBytePrefixedString(reader: VirtualFile): ByteString {
-    const strLen = reader.readByte();
-    return reader.readString(strLen);
-  }
-
-    /** read a string prefixed with is 4 byte size */
-  protected readIntPrefixedString(reader: VirtualFile): ByteString {
-    const strLen = reader.readUInt32BE();
-    if (strLen >= reader.leftLength()) {
-      LinkObjectBase.baseLogging.error('Size of string is to big! ' + strLen + ' ' + reader.getFilename());
-      return ByteString.empty;
-    }
-    return reader.readString(strLen);
+  protected readBytePrefixedString(reader: ViDataReader): ByteString {
+    const strLen = reader.readByte('link-object-base.byte-prefixed-string.length');
+    return reader.readString(strLen, 'link-object-base.byte-prefixed-string');
   }
 
   /** Parse data from current reader position into this LinkObject */
-  public abstract parseContainer(reader: VirtualFile, version?: ViVersion): void;
+  public abstract parseContainer(reader: ViDataReader, version?: ViVersion): void;
 }

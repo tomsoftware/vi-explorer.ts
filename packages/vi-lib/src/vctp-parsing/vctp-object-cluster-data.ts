@@ -1,4 +1,4 @@
-import { VirtualFile } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { TypeGroup, VCTPObjectBase } from './vctp-object-base';
 import { ViVersion } from '../vi-version';
 
@@ -18,8 +18,8 @@ export class VCTPObjectClusterData extends VCTPObjectBase {
     }
   }
 
-  public parse(reader: VirtualFile, version: ViVersion) {
-    this.clusterFormat = reader.readUInt16BE();
+  public parse(reader: ViDataReader, version: ViVersion) {
+    this.clusterFormat = reader.readUInt16('vctp-cluster-data.format');
     this.paresLabel(reader);
   }
 

@@ -146,8 +146,8 @@ export class ViPassword {
     // create the MD5 from the block diagram
     let blockDiagramMd5: Md5;
     if (blockReader != null) {
-      const length = blockReader.readUInt32BE();
-      const data = blockReader.readBytes(length);
+      const length = blockReader.readUInt32('vi-password.block-diagram.length');
+      const data = blockReader.readBytes(length, 'vi-password.block-diagram.data');
       blockDiagramMd5 = Md5.hashBuffer(data);
     }
     else {

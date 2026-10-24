@@ -1,0 +1,133 @@
+import { Logger } from "@tomsoftware/logger";
+import { BufferedFile, ByteString, VirtualFile } from "@tomsoftware/virtual-fs";
+
+export class ReadLogger {
+  public readonly readLog = new Map<number, string>();
+  public readonly reader: VirtualFile;
+
+  public constructor(reader: VirtualFile) {
+    this.reader = reader;
+  }
+
+  public log(offset: number, length: number, label: string | undefined) {
+    this.readLog.set(offset, label ?? 'unknown');
+  }
+}
+
+export class LogManager {
+  private loggers = new Map<string, ReadLogger>();
+
+  public get(reader: VirtualFile): ReadLogger{
+    const loggerName = reader.getFilename();
+    const l = this.loggers.get(loggerName);
+    if (l != null) {
+      return l;
+    }
+
+    const newL = new ReadLogger(reader);
+    this.loggers.set(loggerName, newL);
+    return newL;
+  }
+}
+
+export class ViDataReader {
+  private static logging = new Logger('ViDataReader');
+  private readonly reader: VirtualFile;
+  private readonly readLog: ReadLogger;
+  private readonly logManager: LogManager;
+
+  public constructor(reader: VirtualFile, logManager: LogManager) {
+    this.reader = reader;
+    this.logManager = logManager;
+    this.readLog = logManager.get(reader);
+  }
+
+  private log(label: string | undefined, length: number) {
+    const offset = this.reader.tell();
+    this.readLog.log(offset, length, label ?? 'unknown');
+  }
+
+  public eof(): boolean {
+    return this.reader.eof();
+  }
+
+  public length(): number {
+    return this.reader.length();
+  }
+
+  public getBytes(offset: number, length: number, label?: string): Uint8Array {
+    this.readLog.log(offset, length, label);
+    return this.reader.getBytes(offset, length);
+  }
+
+  public readByte(label?: string): number {
+    this.log(label, 1);
+    return this.reader.readByte();
+  }
+
+  public readUInt16(label?: string): number {
+    this.log(label, 2);
+    return this.reader.readUInt16BE();
+  }
+
+  public readUInt32(label?: string): number {
+    this.log(label, 4);
+    return this.reader.readUInt32BE();
+  }
+
+  public readBytes(length: number, label?: string): Uint8Array {
+    this.log(label, length);
+    return this.reader.readBytes(length);
+  }
+
+  public readString(length: number, label?: string): ByteString {
+    this.log(label, length);
+    return this.reader.readString(length);
+  }
+
+  /** Read a string prefixed with is 4 byte size */
+  public readLengthString(label: string) {
+    const offset = this.reader.tell();
+    const strLen = this.reader.readUInt32BE();
+    if (strLen >= this.reader.leftLength()) {
+      ViDataReader.logging.error('Size of string is to big! ' + strLen + ' to read '+ label + ' in ' + this.reader.getFilename());
+      return ByteString.empty;
+    }
+    this.readLog.log(offset, strLen + 4, label);
+    return this.reader.readString(strLen);
+  }
+
+  /** Read a number that can be 16 or 32 bit */
+  public readVarSizeNumber(label: string) {
+    const offset = this.reader.tell();
+    const value = this.reader.readUInt16BE();
+    if ((value & 0x8000) !== 0) {
+      this.readLog.log(offset, 4, label);
+      return ((value & 0x7fff) << 16) | this.reader.readUInt16BE();
+    }
+        this.readLog.log(offset, 2, label);
+    return value;
+  }
+
+  public createNew(buffer: Uint8Array<ArrayBufferLike>, fileName?: string): ViDataReader | null {
+    const newReader = new BufferedFile(buffer, fileName)
+    return new ViDataReader(newReader, this.logManager);
+  }
+
+  public createSubReader(offset: number, length?: number | null, fileName?: string): ViDataReader {
+    const newReader = this.reader.createSubReader(offset, length, fileName);
+    return new ViDataReader(newReader, this.logManager);
+  }
+
+  public tell(): number {
+    return this.reader.tell();
+  }
+
+  public getFilename(): string {
+    return this.reader.getFilename();
+  }
+
+  public seek(position: number) {
+    return this.reader.seek(position);
+  }
+}
