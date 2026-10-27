@@ -1,0 +1,7 @@
+:root {
+  --color-background: Canvas;
+  --color-background-subtle: color-mix(in srgb, CanvasText 7%, Canvas);
+  --color-background-emphasized: color-mix(in srgb, CanvasText 10%, Canvas);
+  --color-modal-backdrop: color-mix(in srgb, CanvasText 35%, transparent);
+  --color-border: color-mix(in srgb, Canvas 50%, CanvasText);
+}

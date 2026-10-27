@@ -1,4 +1,4 @@
-import { ViDataReader } from '../vi-data-reader';
+import { ViDataReader } from '../../vi-data-reader';
 import { ViVersion } from '../../vi-version';
 import { HeapToViLinkObject } from '../heap-to-vi-link-object';
 

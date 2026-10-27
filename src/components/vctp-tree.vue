@@ -13,34 +13,12 @@ const xmlText = computed(() => {
 </script>
 
 <template>
-  <div class="vctp-tree">
-    <h3>VCTP</h3>
-
-    <pre v-if="xmlText" class="xml-output">{{ xmlText }}</pre>
-    <div v-else class="empty">No VCTP generated.</div>
+  <div>
+    <pre v-if="xmlText">{{ xmlText }}</pre>
+    <div v-else>No VCTP generated.</div>
   </div>
 </template>
 
 <style scoped>
-.vctp-tree {
-  margin-top: 1.5rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 0.75rem;
-}
 
-.xml-output {
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-family: monospace;
-  font-size: 0.8rem;
-  padding: 0.75rem;
-  border-radius: 4px;
-  overflow-x: auto;
-}
-
-.empty {
-  color: #666;
-}
 </style>

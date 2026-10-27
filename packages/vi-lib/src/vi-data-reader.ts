@@ -1,8 +1,18 @@
 import { Logger } from "@tomsoftware/logger";
 import { BufferedFile, ByteString, VirtualFile } from "@tomsoftware/virtual-fs";
 
+export class ReadLogEntry {
+  public length: number;
+  public label: string;
+  
+  constructor(length: number, label?: string) {
+    this.length = length;
+    this.label = label ?? 'unknown';
+  }
+}
+
 export class ReadLogger {
-  public readonly readLog = new Map<number, string>();
+  public readonly readLog = new Map<number, ReadLogEntry>();
   public readonly reader: VirtualFile;
 
   public constructor(reader: VirtualFile) {
@@ -10,7 +20,12 @@ export class ReadLogger {
   }
 
   public log(offset: number, length: number, label: string | undefined) {
-    this.readLog.set(offset, label ?? 'unknown');
+    const newEntry = new ReadLogEntry(length, label);
+    this.readLog.set(offset, newEntry);
+  }
+
+  public getData(): Uint8Array {
+    return this.reader.getBytes(0, this.reader.length());
   }
 }
 
@@ -27,6 +42,10 @@ export class LogManager {
     const newL = new ReadLogger(reader);
     this.loggers.set(loggerName, newL);
     return newL;
+  }
+
+  public entries(): Array<{ name: string; logger: ReadLogger }> {
+    return Array.from(this.loggers.entries()).map(([name, logger]) => ({ name, logger }));
   }
 }
 
@@ -65,14 +84,32 @@ export class ViDataReader {
     return this.reader.readByte();
   }
 
-  public readUInt16(label?: string): number {
+  public readUInt16BE(label?: string): number {
     this.log(label, 2);
     return this.reader.readUInt16BE();
   }
 
-  public readUInt32(label?: string): number {
+  public readUInt16LE(label?: string): number {
+    this.log(label, 2);
+    return this.reader.readUInt16LE();
+  }
+
+  public readUInt16(label?: string): number {
+    return this.readUInt16BE(label);
+  }
+
+  public readUInt32BE(label?: string): number {
     this.log(label, 4);
     return this.reader.readUInt32BE();
+  }
+
+  public readUInt32LE(label?: string): number {
+    this.log(label, 4);
+    return this.reader.readUInt32LE();
+  }
+
+  public readUInt32(label?: string): number {
+    return this.readUInt32BE(label);
   }
 
   public readBytes(length: number, label?: string): Uint8Array {
@@ -117,6 +154,10 @@ export class ViDataReader {
   public createSubReader(offset: number, length?: number | null, fileName?: string): ViDataReader {
     const newReader = this.reader.createSubReader(offset, length, fileName);
     return new ViDataReader(newReader, this.logManager);
+  }
+
+  public leftLength(): number {
+    return this.reader.leftLength();
   }
 
   public tell(): number {

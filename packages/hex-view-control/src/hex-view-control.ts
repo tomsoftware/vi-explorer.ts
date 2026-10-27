@@ -1,8 +1,14 @@
 import { DownloadHelper } from "./download-helper";
 
+type ReadLogEntry = {
+  length: number;
+  label: string;
+}
+
 export class HexView extends HTMLElement {
   private data: Uint8Array = new Uint8Array(0);
   private fileName?: string;
+  private markers = new Map<number, ReadLogEntry>();
   private bytesPerRow = 16;
   private rowHeight = 18; // font size dependent
   private container!: HTMLDivElement;
@@ -26,6 +32,11 @@ export class HexView extends HTMLElement {
     this.updateElement('title', fileName);
     this.updateElement('size', data.length.toString());
 
+    this.update();
+  }
+
+  public setMarkers(markers: Map<number, ReadLogEntry> | undefined) {
+    this.markers = new Map(markers ?? []);
     this.update();
   }
 
@@ -107,6 +118,15 @@ export class HexView extends HTMLElement {
           top: 0;
           left: 0;
           white-space: pre;
+          font-size: 12px;
+          line-height: 18px;
+        }
+
+        .byte,
+        .ascii {
+          display: inline-block;
+          min-width: 1.2em;
+          border-radius: 2px;
         }
       </style>
 
@@ -167,22 +187,42 @@ export class HexView extends HTMLElement {
     let out = "";
     for (let i = start; i < end; i += this.bytesPerRow) {
       const slice = this.data.slice(i, i + this.bytesPerRow);
+      const rowBytes = Array.from(slice).map((b, index) => {
+        const offset = i + index;
+        const marker = this.markers.get(offset);
+        const markerColor = this.getMarkerColor(marker);
+        const style = markerColor == null ? '' : ` style="background:${markerColor};"`;
+        const hex = b.toString(16).padStart(2, "0").toUpperCase();
+        return `<span class="byte"${style}>${hex}</span>`;
+      });
 
-      const hex = Array.from(slice)
-        .map(b => b.toString(16).padStart(2, "0").toUpperCase())
-        .join(" ")
-        .padEnd(this.bytesPerRow * 3, " ");
+      const ascii = Array.from(slice).map((b, index) => {
+        const offset = i + index;
+        const markerLabel = this.markers.get(offset);
+        const markerColor = markerLabel == null ? null : this.getMarkerColor(markerLabel);
+        const style = markerColor == null ? '' : ` style="background:${markerColor};"`;
+        const char = b >= 32 && b <= 126 ? String.fromCharCode(b) : ".";
+        return `<span class="ascii"${style}>${char}</span>`;
+      });
 
-      const ascii = Array.from(slice)
-        .map(b => (b >= 32 && b <= 126 ? String.fromCharCode(b) : "."))
-        .join("");
-
-      out += `${hex}  ${ascii}\n`;
+      out += `${rowBytes.join(" ")}  ${ascii.join("")}\n`;
     }
 
     // set position of Pre-Element
     this.pre.style.transform = `translateY(${this.firstRow * this.rowHeight}px)`;
-    this.pre.textContent = out;
+    this.pre.innerHTML = out;
+  }
+
+  private getMarkerColor(marker: ReadLogEntry | undefined): string | null {
+    if (marker == null) {
+      return null;
+    }
+    let hash = 0;
+    for (let i = 0; i < marker.label.length; i++) {
+      hash = (hash * 31 + marker.label.charCodeAt(i)) >>> 0;
+    }
+    const hue = hash % 360;
+    return `hsla(${hue}, 70%, 58%, 0.35)`;
   }
 
   private updatePosition() {

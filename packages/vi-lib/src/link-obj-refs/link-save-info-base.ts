@@ -1,9 +1,9 @@
-import { ViDataReader } from "@tomsoftware/virtual-fs";
+import { ViDataReader } from "../vi-data-reader";
 import { LinkObjectBase } from "./link-object-base";
 import { ViVersion } from "../vi-version";
 import { Logger } from "@tomsoftware/logger";
 import { LinkObjectFactory } from "./link-object-factory";
-import { ByteString } from "@tomsoftware/virtual-fs/src/binary-string";
+import { ByteString } from "@tomsoftware/virtual-fs";
 
 export abstract class LinkSaveInfoBasic extends LinkObjectBase {
   private static loggerLinkSave = new Logger('LinkSaveInfoBasic');

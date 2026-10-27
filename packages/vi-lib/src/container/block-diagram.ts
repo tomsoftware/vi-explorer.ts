@@ -1,4 +1,4 @@
-import { ViDataReader } from "@tomsoftware/virtual-fs";
+import { ViDataReader } from "../vi-data-reader";
 
 export class BlockDiagram {
   public constructor(reader: ViDataReader) {

@@ -1,4 +1,4 @@
-import { ViDataReader } from 'packages/virtual-fs';
+import { ViDataReader } from '../vi-data-reader';
 import { ViIcon } from './vi-icon';
 
 /** Read the "Icl8" chunk and convert it to a 32 bit image */

@@ -1,4 +1,5 @@
-import { ViDataReader, ByteString } from '@tomsoftware/virtual-fs';
+import { ByteString } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../../vi-data-reader';
 import { LinkObjectBase } from '../link-object-base';
 import { ViVersion } from '../../vi-version';
 

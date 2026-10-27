@@ -1,10 +1,11 @@
+import { ByteString } from '@tomsoftware/virtual-fs';
 import { ViDataReader } from '../vi-data-reader';
 import { LinkObjectBase } from './link-object-base';
 import { ViVersion } from '../vi-version';
 
 export class ObjectContainerHeader extends LinkObjectBase {
 
-  public unknown1: string | null = null;
+  public unknown1: ByteString | null = null;
   public unknown2: Uint8Array = new Uint8Array(0);
 
   public parseContainer(reader: ViDataReader, version: ViVersion) {

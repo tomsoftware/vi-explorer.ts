@@ -1,4 +1,5 @@
-import { ViDataReader } from '../vi-data-reader';
+import { ByteString } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../../vi-data-reader';
 import { ViVersion } from '../../vi-version';
 import { Logger } from '@tomsoftware/logger';
 import { LinkSaveInfoBasic } from '../link-save-info-base';
@@ -11,7 +12,7 @@ export class VIPI extends LinkSaveInfoBasic {
   public apiLinkIsInternal: number = 0;
   public apiLinkUnknown = 0;
   public apiLinkCallParentNodes = 0;
-  public apiLinkContent: string = '';
+  public apiLinkContent: ByteString = ByteString.empty;
 
   public parseContainer(reader: ViDataReader, version: ViVersion) {
     super.parseLinkSaveInfo(reader, version);

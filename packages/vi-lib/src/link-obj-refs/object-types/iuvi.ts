@@ -1,4 +1,5 @@
-import { ViDataReader } from '../vi-data-reader';
+import { ByteString } from '@tomsoftware/virtual-fs';
+import { ViDataReader } from '../../vi-data-reader';
 import { ViVersion } from '../../vi-version';
 import { OffsetTypedLinkObject } from '../offset-typed-link-object';
 import { LinkObjectBase } from '../link-object-base';
@@ -9,7 +10,7 @@ import { HeapToViLinkObject } from '../heap-to-vi-link-object';
 export class IUVI extends HeapToViLinkObject {
   public static readonly type = 'IUVI';
 
-  public iuseStr: string = '';
+  public iuseStr: ByteString = ByteString.empty;
 
   public parseContainer(reader: ViDataReader, version: ViVersion) {
 
