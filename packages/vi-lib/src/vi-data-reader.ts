@@ -54,16 +54,18 @@ export class ViDataReader {
   private readonly reader: VirtualFile;
   private readonly readLog: ReadLogger;
   private readonly logManager: LogManager;
+  private readonly baseOffset: number;
 
-  public constructor(reader: VirtualFile, logManager: LogManager) {
+  public constructor(reader: VirtualFile, logManager: LogManager, baseOffset = 0) {
     this.reader = reader;
     this.logManager = logManager;
     this.readLog = logManager.get(reader);
+    this.baseOffset = baseOffset;
   }
 
   private log(label: string | undefined, length: number) {
     const offset = this.reader.tell();
-    this.readLog.log(offset, length, label ?? 'unknown');
+    this.readLog.log(this.baseOffset + offset, length, label ?? 'unknown');
   }
 
   public eof(): boolean {
@@ -75,7 +77,7 @@ export class ViDataReader {
   }
 
   public getBytes(offset: number, length: number, label?: string): Uint8Array {
-    this.readLog.log(offset, length, label);
+    this.readLog.log(this.baseOffset + offset, length, label);
     return this.reader.getBytes(offset, length);
   }
 
@@ -130,7 +132,7 @@ export class ViDataReader {
       ViDataReader.logging.error('Size of string is to big! ' + strLen + ' to read '+ label + ' in ' + this.reader.getFilename());
       return ByteString.empty;
     }
-    this.readLog.log(offset, strLen + 4, label);
+    this.readLog.log(this.baseOffset + offset, strLen + 4, label);
     return this.reader.readString(strLen);
   }
 
@@ -139,21 +141,27 @@ export class ViDataReader {
     const offset = this.reader.tell();
     const value = this.reader.readUInt16BE();
     if ((value & 0x8000) !== 0) {
-      this.readLog.log(offset, 4, label);
+      this.readLog.log(this.baseOffset + offset, 4, label);
       return ((value & 0x7fff) << 16) | this.reader.readUInt16BE();
     }
-        this.readLog.log(offset, 2, label);
+        this.readLog.log(this.baseOffset + offset, 2, label);
     return value;
   }
 
-  public createNew(buffer: Uint8Array<ArrayBufferLike>, fileName?: string): ViDataReader | null {
+  public createNew(buffer: Uint8Array<ArrayBufferLike>, fileName: string): ViDataReader | null {
     const newReader = new BufferedFile(buffer, fileName)
     return new ViDataReader(newReader, this.logManager);
   }
 
   public createSubReader(offset: number, length?: number | null, fileName?: string): ViDataReader {
-    const newReader = this.reader.createSubReader(offset, length, fileName);
-    return new ViDataReader(newReader, this.logManager);
+    if (fileName == null) {
+      const newReader = this.reader.createSubReader(offset, length, this.reader.getFilename());
+      return new ViDataReader(newReader, this.logManager, this.baseOffset + offset);
+    }
+    else {
+      const newReader = this.reader.createSubReader(offset, length, fileName);
+      return new ViDataReader(newReader, this.logManager);
+    }
   }
 
   public leftLength(): number {

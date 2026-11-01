@@ -26,18 +26,18 @@ export class ViResourceContainer {
 
     // read resource data header
     const headerReader = reader.createSubReader(headerOffset);
-    this.INT1 = headerReader.readUInt32('vi-resource-container.INT1');
-    this.INT2 = headerReader.readUInt32('vi-resource-container.INT2');
-    this.INT3 = headerReader.readUInt32('vi-resource-container.INT3');
-    this.dataOffset = dataSetOffset + headerReader.readUInt32('vi-resource-container.dataOffset');
-    this.INT4 = headerReader.readUInt32('vi-resource-container.INT4');
+    this.INT1 = headerReader.readUInt32('vi-resource-container.INT1@' + this.name);
+    this.INT2 = headerReader.readUInt32('vi-resource-container.INT2@' + this.name);
+    this.INT3 = headerReader.readUInt32('vi-resource-container.INT3@' + this.name);
+    this.dataOffset = dataSetOffset + headerReader.readUInt32('vi-resource-container.dataOffset@' + this.name);
+    this.INT4 = headerReader.readUInt32('vi-resource-container.INT4@' + this.name);
 
     ViResourceContainer.logging.log('Found container header "'+ name +'" at '+ headerOffset +' point to '+ this.dataOffset);
 
-    // unfortunately I do not know the size of the container
-    this.reader = reader.createSubReader(this.dataOffset, null, reader.getFilename() +':' + name);
+    // create reader to reade the parts header
+    this.reader = reader.createSubReader(this.dataOffset, null);
 
-    const firstPart = ViResourceContainer.getPartOffset(this.reader, 0);
+    const firstPart = this.getPartOffset(this.reader, 0);
     this.firstSize = firstPart.size;
 
     Object.seal(this);
@@ -45,11 +45,11 @@ export class ViResourceContainer {
 
   /** returns the full size of this container with all parts and part-headers */
   public calculateContainerSize(reader: ViDataReader, count: number): number {
-    const lastPart = ViResourceContainer.getPartOffset(reader, count - 1);
+    const lastPart = this.getPartOffset(reader, count - 1);
     return lastPart.nextOffset;
   }
 
-  private static getPartOffset(reader: ViDataReader, index: number): {offset: number, size: number, nextOffset: number} {
+  private getPartOffset(reader: ViDataReader, index: number): {offset: number, size: number, nextOffset: number} {
     let offset = 0;
     let nextOffset = 0;
     let size = 0;
@@ -63,7 +63,7 @@ export class ViResourceContainer {
       offset = nextOffset;
       reader.seek(offset);
 
-      size = reader.readUInt32('vi-resource-container.part-size');
+      size = reader.readUInt32('vi-resource-container.part-size@' + this.name);
 
       nextOffset += size;
 
@@ -83,23 +83,25 @@ export class ViResourceContainer {
 
   /** return a file read to the content of this resource */
   public getReader(useCompression = true, index = 0): ViDataReader | null {
-    const partInfo = ViResourceContainer.getPartOffset(this.reader, index);
+    const partInfo = this.getPartOffset(this.reader, index);
 
     if (this.reader.eof()) {
       ViResourceContainer.logging.error('Unable to get data for resource ' + this.name + ' with index: ' + index);
       return null;
     }
 
+    const containerName = this.reader.getFilename() +':' + this.name;
+
     if (!useCompression) {
       // return plain data
-      return this.reader.createSubReader(partInfo.offset, partInfo.size);
+      return this.reader.createSubReader(partInfo.offset, partInfo.size, containerName);
     }
 
-    const unpackedSize = this.reader.readUInt32('vi-resource-container.unpacked-size');
+    const unpackedSize = this.reader.readUInt32('vi-resource-container.unpacked-size@'+ this.name);
 
     // decompress
     this.reader.seek(partInfo.offset + 4);
-    const buffer = this.reader.readBytes(partInfo.size - 4, 'vi-resource-container.compressed-data');
+    const buffer = this.reader.readBytes(partInfo.size - 4, 'vi-resource-container.compressed-data@'+ this.name);
 
     let result: Uint8Array;
     try {
@@ -114,6 +116,6 @@ export class ViResourceContainer {
     }
 
     // return uncompressed data
-    return this.reader.createNew(result);
+    return this.reader.createNew(result, containerName);
   }
 }

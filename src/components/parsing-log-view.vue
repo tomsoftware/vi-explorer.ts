@@ -33,8 +33,6 @@ function selectLogEntry(entry: { name: string; logger: any }) {
   <div class="container-view">
     <div class="left">
 
-      <div v-if="logEntries.length > 0" class="read-log-panel">
-      <h3>Read-log entries</h3>
       <ul class="read-log-list">
         <li
           v-for="entry in logEntries"
@@ -45,7 +43,6 @@ function selectLogEntry(entry: { name: string; logger: any }) {
           {{ entry.name }}
         </li>
       </ul>
-    </div>
 
     </div>
 
@@ -60,4 +57,8 @@ function selectLogEntry(entry: { name: string; logger: any }) {
 .left { width:40%; overflow:auto }
 .right { flex:1 }
 .hex-view { height:600px }
+li:hover { background-color: var(--hover-background-color);}
+li.selected { background: var(--selection-background-color); }
+
+li { cursor: pointer; }
 </style>

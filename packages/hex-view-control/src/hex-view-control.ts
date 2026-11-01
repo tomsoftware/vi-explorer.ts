@@ -1,8 +1,13 @@
-import { DownloadHelper } from "./download-helper";
+import { DownloadHelper } from './download-helper';
 
 type ReadLogEntry = {
   length: number;
   label: string;
+}
+
+type MarkerRenderState = {
+  leftBytes: number;
+  marker: ReadLogEntry | undefined;
 }
 
 export class HexView extends HTMLElement {
@@ -18,7 +23,7 @@ export class HexView extends HTMLElement {
 
   constructor() {
     super();
-    this.attachShadow({ mode: "open" });
+    this.attachShadow({ mode: 'open' });
   }
 
   connectedCallback() {
@@ -125,7 +130,6 @@ export class HexView extends HTMLElement {
         .byte,
         .ascii {
           display: inline-block;
-          min-width: 1.2em;
           border-radius: 2px;
         }
       </style>
@@ -142,21 +146,21 @@ export class HexView extends HTMLElement {
       </div>
     `;
 
-    this.container = this.shadowRoot.querySelector(".spacer")!;
-    this.pre = this.shadowRoot.querySelector("pre")!;
-    this.contentArea = this.shadowRoot.querySelector(".content-area")!;
+    this.container = this.shadowRoot.querySelector('.spacer')!;
+    this.pre = this.shadowRoot.querySelector('pre')!;
+    this.contentArea = this.shadowRoot.querySelector('.content-area')!;
 
-    const downloadButton = this.shadowRoot.querySelector(".download-button")!;
-    downloadButton.addEventListener("click", () => {
+    const downloadButton = this.shadowRoot.querySelector('.download-button')!;
+    downloadButton.addEventListener('click', () => {
       if (this.data == null) {
         return;
       }
       DownloadHelper.downloadBytes(this.data, this.fileName ?? 'data.bin');
     });
 
-    this.contentArea.addEventListener("scroll", () => this.update());
-    this.pre.addEventListener("mouseup", () => this.updatePosition());
-    this.pre.addEventListener("keyup", () => this.updatePosition());
+    this.contentArea.addEventListener('scroll', () => this.update());
+    this.pre.addEventListener('mouseup', () => this.updatePosition());
+    this.pre.addEventListener('keyup', () => this.updatePosition());
   }
 
   private update() {
@@ -184,28 +188,15 @@ export class HexView extends HTMLElement {
     );
 
     // create Hex + ASCII
-    let out = "";
+    let out = '';
+    const markerState: MarkerRenderState = { leftBytes: 0, marker: undefined };
     for (let i = start; i < end; i += this.bytesPerRow) {
       const slice = this.data.slice(i, i + this.bytesPerRow);
-      const rowBytes = Array.from(slice).map((b, index) => {
-        const offset = i + index;
-        const marker = this.markers.get(offset);
-        const markerColor = this.getMarkerColor(marker);
-        const style = markerColor == null ? '' : ` style="background:${markerColor};"`;
-        const hex = b.toString(16).padStart(2, "0").toUpperCase();
-        return `<span class="byte"${style}>${hex}</span>`;
-      });
-
-      const ascii = Array.from(slice).map((b, index) => {
-        const offset = i + index;
-        const markerLabel = this.markers.get(offset);
-        const markerColor = markerLabel == null ? null : this.getMarkerColor(markerLabel);
-        const style = markerColor == null ? '' : ` style="background:${markerColor};"`;
-        const char = b >= 32 && b <= 126 ? String.fromCharCode(b) : ".";
-        return `<span class="ascii"${style}>${char}</span>`;
-      });
-
-      out += `${rowBytes.join(" ")}  ${ascii.join("")}\n`;
+      const row = this.renderMarkedRow(slice, i, markerState);
+      // make every hex-line equal length
+      const padding = ' '.repeat(((this.bytesPerRow - slice.length)* 3) + 2);
+      // build one line
+      out += row.hex + padding + row.ascii + '\n';
     }
 
     // set position of Pre-Element
@@ -213,14 +204,104 @@ export class HexView extends HTMLElement {
     this.pre.innerHTML = out;
   }
 
+  private renderMarkedRow(
+    bytes: Uint8Array,
+    offset: number,
+    state: MarkerRenderState
+  ): { hex: string; ascii: string } {
+    let hex = '';
+    let ascii = '';
+    let spanOpen = false;
+
+    const openSpans = (marker: ReadLogEntry) => {
+      const color = this.getMarkerColor(marker);
+      const title = this.escapeHtml(marker.label);
+      hex += `<span class="byte" title="${title}" style="background:${color};">`;
+      ascii += `<span class="ascii" title="${title}" style="background:${color};">`;
+      spanOpen = true;
+    };
+
+    if (state.leftBytes > 0 && state.marker != null) {
+      openSpans(state.marker);
+    }
+
+    for (let index = 0; index < bytes.length; index++) {
+      if (state.leftBytes <= 0) {
+        if (spanOpen) {
+          hex += '</span>';
+          ascii += '</span>';
+          spanOpen = false;
+        }
+
+        state.marker = this.markers.get(offset + index);
+        state.leftBytes = Math.max(0, state.marker?.length ?? 0);
+        if (state.leftBytes > 0 && state.marker != null) {
+          openSpans(state.marker);
+        }
+      }
+
+      const byte = bytes[index];
+
+      hex += byte.toString(16).padStart(2, '0').toUpperCase();
+      ascii += (byte >= 32 && byte <= 126) ? this.escapeHtml(String.fromCharCode(byte)) : '.';
+
+      if (state.leftBytes > 0) {
+        state.leftBytes--;
+        if (state.leftBytes === 0) {
+          hex += '</span>';
+          ascii += '</span>';
+          spanOpen = false;
+          state.marker = undefined;
+        }
+      }
+
+      hex += ' ';
+    }
+
+    if (spanOpen) {
+      hex += '</span>';
+      ascii += '</span>';
+    }
+
+    return { hex, ascii };
+  }
+
+  private escapeHtml(value: string): string {
+    return value.replace(/[&<>"']/g, character => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    })[character]!);
+  }
+
+  private static hashString(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const letter = str.charCodeAt(i);
+      if (letter === 64 /* 64 == '@' */) {
+        break;
+      }
+      hash += (hash + letter) >>> 0;
+      hash += (hash << 10);
+      hash ^= (hash >> 6);
+    }
+
+    hash += (hash << 3);
+    hash ^= (hash >> 11);
+    hash += (hash << 15);
+
+    return hash;
+  }
+
   private getMarkerColor(marker: ReadLogEntry | undefined): string | null {
     if (marker == null) {
       return null;
     }
-    let hash = 0;
-    for (let i = 0; i < marker.label.length; i++) {
-      hash = (hash * 31 + marker.label.charCodeAt(i)) >>> 0;
-    }
+
+    let hash = HexView.hashString(marker.label);
+
     const hue = hash % 360;
     return `hsla(${hue}, 70%, 58%, 0.35)`;
   }
@@ -291,6 +372,6 @@ export class HexView extends HTMLElement {
 
 }
 
-if (!customElements.get("hex-view")) {
-  customElements.define("hex-view", HexView);
+if (!customElements.get('hex-view')) {
+  customElements.define('hex-view', HexView);
 }

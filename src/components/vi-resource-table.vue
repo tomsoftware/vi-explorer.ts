@@ -49,10 +49,11 @@ function selectContainer(c: ViResourceContainer, idx: number) {
         <tr
           v-for="(container, idx) in containers"
           :key="container.name + ':' + container.headerOffset"
+          class="container_row"
           :class="{ selected: idx === selectedIndex }"
           @click="selectContainer(container, idx)"
         >
-          <td>{{ container.name }}</td>
+          <td class="container_name">{{ container.name }}</td>
           <td>{{ formatNumber(container.count) }}</td>
           <td>{{ formatNumber(container.firstSize) }}</td>
           <td>{{ formatNumber(container.headerOffset) }}</td>
@@ -86,6 +87,9 @@ td {
   vertical-align: top;
 }
 
-tr.selected { background:Highlight }
+tr:hover { background-color: var(--hover-background-color);}
+tr.selected { background: var(--selection-background-color); }
+
+.container_row { cursor: pointer; }
 
 </style>

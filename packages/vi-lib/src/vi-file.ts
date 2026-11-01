@@ -91,12 +91,12 @@ export class ViFile {
   public getBlockDiagramReader(): ViDataReader | null {
     if (this.resources.resourceExists('BDHc')) {
       // for Version 10,11,12
-      return this.resources.getReaderByName('BDHc', true);
+      return this.resources.getReaderByName('BDHc', false);
     }
 
      if (this.resources.resourceExists('BDHb')) {
       // for Version 7,8
-      return this.resources.getReaderByName('BDHb', true);
+      return this.resources.getReaderByName('BDHb', false);
     }
 
      if (this.resources.resourceExists('BDHP')) {
