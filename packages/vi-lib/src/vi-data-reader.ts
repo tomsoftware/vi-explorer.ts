@@ -148,7 +148,7 @@ export class ViDataReader {
     return value;
   }
 
-  public createNew(buffer: Uint8Array<ArrayBufferLike>, fileName: string): ViDataReader | null {
+  public createNew(buffer: Uint8Array<ArrayBufferLike>, fileName: string): ViDataReader {
     const newReader = new BufferedFile(buffer, fileName)
     return new ViDataReader(newReader, this.logManager);
   }

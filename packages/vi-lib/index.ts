@@ -23,3 +23,16 @@ export * from './src/link-obj-refs/object-types/vilb';
 export * from './src/link-obj-refs/object-types/vivi';
 
 export * from './src/utils/md5';
+
+export * from './src/vi-block-diagram';
+export * from './src/heap-storage/heap-node';
+export * from './src/heap-storage/heap-node-bool';
+export * from './src/heap-storage/heap-node-pstr-list';
+export * from './src/heap-storage/heap-node-point';
+export * from './src/heap-storage/heap-node-rect';
+export * from './src/heap-storage/heap-node-std-int';
+export * from './src/heap-storage/heap-node-string';
+export * from './src/heap-storage/heap-node-td-data-fill';
+export * from './src/heap-storage/heap-node-td-data-fill-leaf';
+export * from './src/heap-storage/heap-node-type-id';
+export * from './src/heap-storage/heap-importer';

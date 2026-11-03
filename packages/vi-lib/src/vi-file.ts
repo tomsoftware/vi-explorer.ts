@@ -12,6 +12,7 @@ import { CPC2 } from './container/cpc2';
 import { LIBN } from './container/libn';
 import { VCTPObjectTerminal } from './vctp-parsing/vctp-object-terminal';
 import { LogManager, ViDataReader } from './vi-data-reader';
+import { ViBlockDiagram } from './vi-block-diagram';
 
 export class ViFile {
   private static logging = new Logger('ViFile');
@@ -87,21 +88,21 @@ export class ViFile {
     return new LIBN(reader);
   }
 
-  /** return the reader for the block diagram */
-  public getBlockDiagramReader(): ViDataReader | null {
+  /** Returns the name of a block-diagram resource type */
+  public getBlockDiagramType(): {type: string} | null {
     if (this.resources.resourceExists('BDHc')) {
       // for Version 10,11,12
-      return this.resources.getReaderByName('BDHc', false);
+      return { type: 'BDHc' };
     }
 
      if (this.resources.resourceExists('BDHb')) {
       // for Version 7,8
-      return this.resources.getReaderByName('BDHb', false);
+      return { type: 'BDHb' };
     }
 
      if (this.resources.resourceExists('BDHP')) {
       // for Version 5,6,7beta
-      return this.resources.getReaderByName('BDHP', false);
+      return { type: 'BDHP' };
     }
 
     ViFile.logging.warn('No Block diagram found!');

@@ -1,5 +1,5 @@
 
-export class TreeObjectHelper {
+export class HeapNodeConstants {
   private static objectTypeNames: { [key: number]: string } = {
     '-7': 'SL__rootObject',
     '-6': 'SL__arrayElement',
@@ -793,6 +793,10 @@ export class TreeObjectHelper {
     }
 
     return id + ':' + objectName;
+  }
+
+  public static getFieldNameById(id: number): string {
+    return this.objectTypeNames[id] ?? id.toString();
   }
 
   public static getClassNameById(classId: number): string {

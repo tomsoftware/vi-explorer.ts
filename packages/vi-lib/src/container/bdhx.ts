@@ -1,8 +1,8 @@
-import { TreeItem } from './tree-item';
+import { TreeItem } from '../heap-storage/old/tree-item';
 import { Logger } from '@tomsoftware/logger';
 import { ViResourceContainer } from '../vi-resource-container';
 import { ViResources } from '../vi-resources';
-import { FileVersion, TreeObjectReader } from './tree-object-reader';
+import { FileVersion, TreeObjectReader } from '../heap-storage/old/tree-object-reader';
 
 export class BDHx {
   private static logging = new Logger('BDHx');
@@ -31,6 +31,6 @@ export class BDHx {
       return;
     }
 
-    this.objectTree = TreeObjectReader.read(reader, fileVersion);
+    this.objectTree = new TreeObjectReader(reader, fileVersion).root;
   }
 }

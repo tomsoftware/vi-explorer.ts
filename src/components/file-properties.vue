@@ -6,6 +6,7 @@ import ResourcesView from './resources-view.vue';
 import VctpTree from './vctp-tree.vue';
 import Modal from './modal.vue';
 import ParsingLogView from './parsing-log-view.vue';
+import BlockDiagramView from './block-diagram-view.vue';
 
 const props = defineProps<{
   filePath: string;
@@ -26,6 +27,7 @@ type passwordInfos = {
 const showVctpTreeModal = ref<boolean>(false);
 const showResourceTableModal = ref<boolean>(false);
 const showParsingLogModal = ref<boolean>(false);
+const showBlockDiagramModal = ref<boolean>(false);
 const size = ref<number | null>(null);
 const img = ref<string | null>(null);
 const imgTerminal = ref<string | null>(null);
@@ -122,10 +124,12 @@ async function loadFileProperties() {
     const c = viFile.getLIfp();
     const d = viFile.getLIbd();
     */
+    /*
     const v = viFile.getVCTP();
     console.trace(v);
     const xml = v.toXml();
     console.trace(xml);
+    */
   } catch (e) {
     console.error(e);
   }
@@ -192,6 +196,7 @@ function toViFile(o: any) {
       <button @click="showVctpTreeModal=true">Type Definitions</button>
       <button @click="showResourceTableModal=true">Resource Table</button>
       <button @click="showParsingLogModal=true">Parsing log</button>
+      <button @click="showBlockDiagramModal=true">Block Diagram</button>
     </div>
 
     <Modal
@@ -200,7 +205,7 @@ function toViFile(o: any) {
       :show="showResourceTableModal"
       @on-close="showResourceTableModal = false"
     >
-      <ResourcesView :vi="toViFile(vi)"/>
+      <ResourcesView :vi="toViFile(vi)" />
     </Modal>
 
     <Modal
@@ -209,7 +214,7 @@ function toViFile(o: any) {
       :show="showVctpTreeModal"
       @on-close="showVctpTreeModal = false"
     >
-      <VctpTree :vi="toViFile(vi)"/>
+      <VctpTree :vi="toViFile(vi)" />
     </Modal>
 
     <Modal
@@ -218,8 +223,18 @@ function toViFile(o: any) {
       :show="showParsingLogModal"
       @on-close="showParsingLogModal = false"
     >
-      <ParsingLogView :vi="toViFile(vi)"/>
+      <ParsingLogView :vi="toViFile(vi)" />
     </Modal>
+
+    <Modal
+      v-if="vi"
+      title="Block Diagram"
+      :show="showBlockDiagramModal"
+      @on-close="showBlockDiagramModal = false"
+    >
+      <BlockDiagramView :vi="toViFile(vi)" />
+    </Modal>
+
 
   </div>
 </template>

@@ -141,11 +141,13 @@ export class ViPassword {
 
   /** Recalculate the hash2 for this VI File */
   public calcHash2(hash1: Md5): Md5 | null {
-    const blockReader = this.vi.getBlockDiagramReader(); 
-
     // create the MD5 from the block diagram
     let blockDiagramMd5: Md5;
-    if (blockReader != null) {
+
+    const blockType = this.vi.getBlockDiagramType();
+
+    if (blockType != null) {
+      const blockReader = this.vi.resources.getReaderByName(blockType.type, false)!;
       const length = blockReader.readUInt32('vi-password.block-diagram.length');
       const data = blockReader.readBytes(length, 'vi-password.block-diagram.data');
       blockDiagramMd5 = Md5.hashBuffer(data);
