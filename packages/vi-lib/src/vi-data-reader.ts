@@ -68,6 +68,10 @@ export class ViDataReader {
     this.readLog.log(this.baseOffset + offset, length, label ?? 'unknown');
   }
 
+  private logWithOffset(offset: number, size: number, label: string | undefined) {
+    this.readLog.log(this.baseOffset + offset, size, label ?? 'unknown');
+  }
+
   public eof(): boolean {
     return this.reader.eof();
   }
@@ -77,7 +81,7 @@ export class ViDataReader {
   }
 
   public getBytes(offset: number, length: number, label?: string): Uint8Array {
-    this.readLog.log(this.baseOffset + offset, length, label);
+    this.logWithOffset(offset, length, label);
     return this.reader.getBytes(offset, length);
   }
 
@@ -114,8 +118,17 @@ export class ViDataReader {
     return this.readUInt32BE(label);
   }
 
+  public readInt16(label?: string): number {
+    const value = this.readUInt16BE(label);
+    return value > 0x7fff ? value - 0x10000 : value;
+  }
+
   public readBytes(length: number, label?: string): Uint8Array {
     this.log(label, length);
+    return this.reader.readBytes(length);
+  }
+
+  public readBytesWithoutLog(length: number): Uint8Array {
     return this.reader.readBytes(length);
   }
 
@@ -132,7 +145,27 @@ export class ViDataReader {
       ViDataReader.logging.error('Size of string is to big! ' + strLen + ' to read '+ label + ' in ' + this.reader.getFilename());
       return ByteString.empty;
     }
-    this.readLog.log(this.baseOffset + offset, strLen + 4, label);
+    this.logWithOffset(offset, strLen + 4, label);
+    return this.reader.readString(strLen);
+  }
+
+  /** read a string prefixed with is 1 byte size */
+  public readBytePrefixedString(label: string): ByteString {
+    const offset = this.tell();
+    const strLen = this.reader.readByte();
+    this.logWithOffset(offset, strLen + 1, label);
+    return this.reader.readString(strLen);
+  }
+
+  /** read a string prefixed with is 4 byte size */
+  public readIntPrefixedString(label: string): ByteString {
+    const offset = this.tell();
+    const strLen = this.reader.readUInt32BE();
+    if (strLen >= this.reader.leftLength()) {
+      ViDataReader.logging.error('Size of string is to big! ' + strLen + ' in ' + this.reader.getFilename());
+      return ByteString.empty;
+    }
+    this.logWithOffset(offset, strLen + 4, label);
     return this.reader.readString(strLen);
   }
 
@@ -141,12 +174,76 @@ export class ViDataReader {
     const offset = this.reader.tell();
     const value = this.reader.readUInt16BE();
     if ((value & 0x8000) !== 0) {
-      this.readLog.log(this.baseOffset + offset, 4, label);
+      this.logWithOffset(offset, 4, label);
       return ((value & 0x7fff) << 16) | this.reader.readUInt16BE();
     }
-        this.readLog.log(this.baseOffset + offset, 2, label);
+    this.logWithOffset(offset, 2, label);
     return value;
   }
+
+  /** Read variable uint with 1, 2 or 4 bytes */
+  public readVariableUInt124(label: string): number {
+    const offset = this.reader.tell();
+
+    const value = this.reader.readByte();
+    if (value === 0xff) {
+      this.logWithOffset(offset, 3, label);
+      return this.reader.readUInt16BE();
+    }
+    if (value === 0xfe) {
+      this.logWithOffset(offset, 5, label);
+      return this.reader.readUInt32BE();
+    }
+
+    this.logWithOffset(offset, 1, label);
+    return value;
+  }
+
+  /** Read variable int with 1, 2 or 4 bytes */
+  public readVariableInt124(label: string): number {
+    const offset = this.reader.tell();
+
+    const value = this.readByte();
+    if (value === 0x80) {
+      this.logWithOffset(offset, 3, label);
+      const extended = this.reader.readUInt16BE();
+      return extended > 0x7fff ? extended - 0x10000 : extended;
+    }
+    if (value === 0x81) {
+      this.logWithOffset(offset, 5, label);
+      return this.reader.readUInt32BE() | 0;
+    }
+
+    this.logWithOffset(offset, 1, label);
+    return value > 0x7f ? value - 0x100 : value;
+  }
+
+  /** read variable int with 2 or 4 bytes */
+  public readVariableInt24(label: string): number {
+    const offset = this.reader.tell();
+
+    const value = this.reader.readUInt16BE();
+    if (value !== 0x8000) {
+      this.logWithOffset(offset, 2, label);
+      return value > 0x7fff ? value - 0x10000 : value;
+    }
+    this.logWithOffset(offset, 6, label);
+    return this.reader.readUInt32BE() | 0;
+  }
+
+
+  /** Read a number that can be 16 or 32 bits */
+  public readVariableUInt24(label: string): number {
+    const offset = this.reader.tell();
+    const value = this.reader.readUInt16BE();
+    if ((value & 0x8000) !== 0) {
+      this.logWithOffset(offset, 4, label);
+      return ((value & 0x7fff) << 16) | this.reader.readUInt16BE();
+    }
+    this.logWithOffset(offset, 2, label);
+    return value;
+  }
+
 
   public createNew(buffer: Uint8Array<ArrayBufferLike>, fileName: string): ViDataReader {
     const newReader = new BufferedFile(buffer, fileName)

@@ -26,6 +26,8 @@ export * from './src/utils/md5';
 
 export * from './src/vi-block-diagram';
 export * from './src/heap-storage/heap-node';
+export * from './src/heap-storage/heap-node-generic';
+export * from './src/heap-storage/heap-content-wrapper';
 export * from './src/heap-storage/heap-node-bool';
 export * from './src/heap-storage/heap-node-pstr-list';
 export * from './src/heap-storage/heap-node-point';

@@ -1,29 +1,23 @@
-import { HeapNode } from "./heap-node";
-import { ViDataReader } from "../vi-data-reader";
+import { HeapNode } from './heap-node';
+import { HeapContentWrapper } from './heap-content-wrapper';
+import { Logger } from '@tomsoftware/logger';
+import { ByteString } from '@tomsoftware/virtual-fs';
 
 /** Parses a sequence of strings prefixed by one-byte lengths. */
 export class HeapNodePStrList extends HeapNode {
-  public values: Uint8Array[] = [];
+  private static readonly logging = new Logger('HeapNodePoint');
+  public values: ByteString[] = [];
 
-  public constructor(tagId: number, scopeInfo: number, offset: number, parent: HeapNode | null) {
-    super(tagId, scopeInfo, offset, parent);
-  }
-
-  public override parseContent(reader: ViDataReader): void {
-    if (!(this.content instanceof Uint8Array)) {
-      this.value = this.content;
+  public parseContent(content: HeapContentWrapper): void {
+    if (content.length < 1) {
+      HeapNodePStrList.logging.error('Can not parse PStrList - size mismatch!');
       return;
     }
 
-    const values: Uint8Array[] = [];
+    const reader = content.getReader();
     while (reader.leftLength() > 0) {
-      const length = reader.readByte("heap-node.string-list.length");
-      if (length > reader.leftLength()) {
-        throw new RangeError(`Truncated heap string list at offset ${this.offset}`);
-      }
-      values.push(reader.readBytes(length, "heap-node.string-list.value"));
+      const str = reader.readBytePrefixedString('string-list.length');
+      this.values.push(str);
     }
-    this.values = values;
-    this.value = values[0] ?? new Uint8Array(0);
   }
 }

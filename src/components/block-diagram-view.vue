@@ -11,7 +11,8 @@ const xmlText = computed(() => {
     return '';
   }
   const blockDiagram = new ViBlockDiagram(props.vi);
-  return (blockDiagram.tree == null) ? 'abc' : 'xyz';
+  const out = JSON.stringify(blockDiagram.tree, null, " ");
+  return out;
 });
 </script>
 

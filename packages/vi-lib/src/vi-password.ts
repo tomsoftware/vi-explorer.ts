@@ -149,7 +149,7 @@ export class ViPassword {
     if (blockType != null) {
       const blockReader = this.vi.resources.getReaderByName(blockType.type, false)!;
       const length = blockReader.readUInt32('vi-password.block-diagram.length');
-      const data = blockReader.readBytes(length, 'vi-password.block-diagram.data');
+      const data = blockReader.readBytesWithoutLog(length);
       blockDiagramMd5 = Md5.hashBuffer(data);
     }
     else {

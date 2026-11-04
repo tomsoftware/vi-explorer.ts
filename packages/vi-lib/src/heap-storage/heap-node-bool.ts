@@ -1,16 +1,19 @@
-import { HeapNode } from "./heap-node";
-import { ViDataReader } from "../vi-data-reader";
+import { HeapNode } from './heap-node';
+import { HeapContentWrapper } from './heap-content-wrapper';
+import { Logger } from '@tomsoftware/logger';
 
 /** Parses heap content encoded as a boolean flag. */
 export class HeapNodeBool extends HeapNode {
-  public constructor(tagId: number, scopeInfo: number, offset: number, parent: HeapNode | null) {
-    super(tagId, scopeInfo, offset, parent);
-  }
+  private static readonly logging = new Logger('HeapNodeBool');
 
-  public override parseContent(reader: ViDataReader): void {
-    this.value = this.content === true;
-    if (this.content instanceof Uint8Array) {
-      reader.seek(reader.length());
+  public value: boolean = false;
+
+  public parseContent(content: HeapContentWrapper): void {
+    if (content.isBool) {
+      this.value = content.getBool();
+    } else {
+      HeapNodeBool.logging.error('Type mismatch - expect bool get ' + content.typeAsString);
+      this.value = false;
     }
   }
 }

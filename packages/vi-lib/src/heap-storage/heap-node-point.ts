@@ -1,27 +1,21 @@
-import { HeapNode } from "./heap-node";
-import { ViDataReader } from "../vi-data-reader";
+import { HeapNode } from './heap-node';
+import { HeapContentWrapper } from './heap-content-wrapper';
+import { Logger } from '@tomsoftware/logger';
 
 /** Parses a point stored as two signed 16-bit coordinates. */
 export class HeapNodePoint extends HeapNode {
+  private static readonly logging = new Logger('HeapNodePoint');
   public x = 0;
   public y = 0;
 
-  public constructor(tagId: number, scopeInfo: number, offset: number, parent: HeapNode | null) {
-    super(tagId, scopeInfo, offset, parent);
-  }
-
-  public override parseContent(reader: ViDataReader): void {
-    if (!(this.content instanceof Uint8Array) || this.content.length !== 4) {
-      this.value = this.content;
+  public parseContent(content: HeapContentWrapper): void {
+    if (content.length !== 4) {
+      HeapNodePoint.logging.error('Content size mismatch - Unable to parse point value!');
       return;
     }
-    this.x = HeapNodePoint.readInt16(reader);
-    this.y = HeapNodePoint.readInt16(reader);
-    this.value = this.content;
+    const reader = content.getReader();
+    this.x = reader.readInt16('HeapNodePoint.x');
+    this.y = reader.readInt16('HeapNodePoint.y');
   }
 
-  private static readInt16(reader: ViDataReader): number {
-    const value = reader.readUInt16BE("heap-node.point.coordinate");
-    return value > 0x7fff ? value - 0x10000 : value;
-  }
 }

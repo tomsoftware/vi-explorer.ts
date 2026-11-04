@@ -1,31 +1,26 @@
-import { HeapNode } from "./heap-node";
-import { ViDataReader } from "../vi-data-reader";
+import { HeapNode } from './heap-node';
+import { HeapContentWrapper } from './heap-content-wrapper';
+import { Logger } from '@tomsoftware/logger';
 
 /** Parses a rectangle stored as four signed 16-bit coordinates. */
 export class HeapNodeRect extends HeapNode {
+  private static readonly logging = new Logger('HeapNodeRect');
   public left = 0;
   public top = 0;
   public right = 0;
   public bottom = 0;
 
-  public constructor(tagId: number, scopeInfo: number, offset: number, parent: HeapNode | null) {
-    super(tagId, scopeInfo, offset, parent);
-  }
-
-  public override parseContent(reader: ViDataReader): void {
-    if (!(this.content instanceof Uint8Array) || this.content.length !== 8) {
-      this.value = this.content;
+  public parseContent(content: HeapContentWrapper): void {
+    if (content.length !== 8) {
+      HeapNodeRect.logging.error('Unable to parse Rect-Content - Size mismatch: ' + content.length);
       return;
     }
-    this.left = HeapNodeRect.readInt16(reader);
-    this.top = HeapNodeRect.readInt16(reader);
-    this.right = HeapNodeRect.readInt16(reader);
-    this.bottom = HeapNodeRect.readInt16(reader);
-    this.value = [this.left, this.top, this.right, this.bottom];
-  }
 
-  private static readInt16(reader: ViDataReader): number {
-    const value = reader.readUInt16BE("heap-node.rect.coordinate");
-    return value > 0x7fff ? value - 0x10000 : value;
+    const reader = content.getReader();
+
+    this.left = reader.readInt16('Rect.left');
+    this.top = reader.readInt16('top');
+    this.right = reader.readInt16('Rect.right');
+    this.bottom = reader.readInt16('Rect.bottom');
   }
 }

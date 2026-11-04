@@ -54,7 +54,7 @@ export abstract class TypedLinkSaveInfoBase extends LinkSaveInfoBasic {
       this.parseLinkSaveInfo(reader, version);
 
       this.typedLinkTD = {
-        index: this.readVariableSizeFieldU2p2(reader),
+        index: reader.readVariableUInt24('typedLinkTDIndex'),
         flags: 0,
       };
 

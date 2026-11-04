@@ -795,7 +795,7 @@ export class HeapNodeConstants {
     return id + ':' + objectName;
   }
 
-  public static getFieldNameById(id: number): string {
+  public static getFieldNameByTypeId(id: number): string {
     return this.objectTypeNames[id] ?? id.toString();
   }
 
@@ -805,6 +805,6 @@ export class HeapNodeConstants {
       return classId.toString();
     }
 
-    return classId + ':' + objectName;
+    return objectName;
   }
 }

@@ -31,6 +31,6 @@ export class VIPI extends LinkSaveInfoBasic {
       this.apiLinkCallParentNodes = reader.readByte('vipi.apiLinkCallParentNodes');
     }
 
-    this.apiLinkContent = this.readIntPrefixedString(reader);
+    this.apiLinkContent = reader.readIntPrefixedString('vipi.apiLinkContentText');
   }
 }

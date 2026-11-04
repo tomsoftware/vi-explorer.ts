@@ -276,21 +276,25 @@ export class HexView extends HTMLElement {
     })[character]!);
   }
 
+  /** basic string to hash - Jenkins Hash */
   private static hashString(str: string): number {
     let hash = 0;
+
     for (let i = 0; i < str.length; i++) {
       const letter = str.charCodeAt(i);
-      if (letter === 64 /* 64 == '@' */) {
+
+      if (letter === 64 /* @ */) {
         break;
       }
-      hash += (hash + letter) >>> 0;
-      hash += (hash << 10);
-      hash ^= (hash >> 6);
+
+      hash = (hash + letter) >>> 0;
+      hash = (hash + (hash << 10)) >>> 0;
+      hash = (hash ^ (hash >>> 6)) >>> 0;
     }
 
-    hash += (hash << 3);
-    hash ^= (hash >> 11);
-    hash += (hash << 15);
+    hash = (hash + (hash << 3)) >>> 0;
+    hash = (hash ^ (hash >>> 11)) >>> 0;
+    hash = (hash + (hash << 15)) >>> 0;
 
     return hash;
   }
