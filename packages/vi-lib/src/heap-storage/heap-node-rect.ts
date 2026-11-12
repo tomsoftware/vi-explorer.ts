@@ -12,7 +12,7 @@ export class HeapNodeRect extends HeapNode {
 
   public parseContent(content: HeapContentWrapper): void {
     if (content.length !== 8) {
-      HeapNodeRect.logging.error('Unable to parse Rect-Content - Size mismatch: ' + content.length);
+      HeapNodeRect.logging.error('Unable to parse Rect-Content - Size mismatch: ' + content.length + ' @ "' + this.tagName + '" pos: ' + content.objectHeaderOffset);
       return;
     }
 

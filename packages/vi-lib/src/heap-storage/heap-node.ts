@@ -1,5 +1,6 @@
 import { HeapNodeConstants } from "./heap-node-constants";
 import { HeapContentWrapper } from "./heap-content-wrapper";
+import { HeapAttribute } from "./heap-attribute";
 
 export enum HeapFileVersion {
   A,
@@ -21,7 +22,7 @@ export abstract class HeapNode {
   public readonly tagName: string;
   public readonly scopeInfo: number;
   public readonly offset: number;
-  public readonly attributes = new Map<number, number>();
+  public readonly attributes = new Array<HeapAttribute>();
   public readonly children: HeapNode[] = [];
 
   public constructor(tagId: number, scopeInfo: number, offset: number) {
@@ -34,4 +35,14 @@ export abstract class HeapNode {
   public abstract parseContent(content: HeapContentWrapper): void;
 
 
+  /** if defined returns ths Class Name of this node */
+  public get className(): string | null {
+    const atr = this.attributes;
+    for(const a of atr) {
+      if (a.isClass) {
+        return a.className;
+      }
+    }
+    return null;
+  }
 }

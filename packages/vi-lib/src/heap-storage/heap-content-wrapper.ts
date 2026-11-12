@@ -18,11 +18,14 @@ export class HeapContentWrapper {
   private static readonly logging = new Logger("HeapContentWrapper");
 
   public readonly contentDataType: HeapContentDataType;
+  public readonly objectHeaderOffset: number;
   private readonly reader: ViDataReader | null;
   public readonly length: number;
 
-  public constructor(contentDataType: HeapContentDataType, container: ViDataReader) {
+  public constructor(contentDataType: HeapContentDataType, container: ViDataReader, objectHeaderOffset: number) {
     this.contentDataType = contentDataType;
+    this.objectHeaderOffset = objectHeaderOffset;
+
     const length = HeapContentWrapper.parseLength(contentDataType, container);
     if (length <= 0) {
       this.length = 0;

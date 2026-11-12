@@ -225,7 +225,7 @@ export class ViDataReader {
     const value = this.reader.readUInt16BE();
     if (value !== 0x8000) {
       this.logWithOffset(offset, 2, label);
-      return value > 0x7fff ? value - 0x10000 : value;
+      return (value << 16) >> 16;
     }
     this.logWithOffset(offset, 6, label);
     return this.reader.readUInt32BE() | 0;

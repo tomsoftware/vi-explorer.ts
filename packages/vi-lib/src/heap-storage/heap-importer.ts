@@ -13,10 +13,11 @@ import { HeapNodeTDDataFill } from './heap-node-td-data-fill';
 import { HeapNodeTDDataFillLeaf } from './heap-node-td-data-fill-leaf';
 import { HeapNodeTypeId } from './heap-node-type-id';
 import { HeapNodeGeneric } from './heap-node-generic';
+import { HeapAttribute } from './heap-attribute';
 
 interface HeapReaders {
-  container: ViDataReader;
-  data: ViDataReader;
+  containerReader: ViDataReader;
+  dataReader: ViDataReader;
 }
 
 const RECT_TAGS = new Set([
@@ -62,8 +63,8 @@ export class HeapImporter {
     HeapImporter.logging.log('Parsing ' + reader.getFilename() + ' heap version: ' + HeapFileVersion[formatVersion]);
     const readers = HeapImporter.createReaders(reader, formatVersion);
     if (readers != null) {
-      this.dataReader = readers.data;
-      this.parse(readers.container);
+      this.dataReader = readers.dataReader;
+      this.parse(readers.containerReader, this.dataReader, formatVersion);
     }
   }
 
@@ -72,8 +73,8 @@ export class HeapImporter {
 
     if (formatVersion === HeapFileVersion.A) {
       return {
-        container: reader.createSubReader(0, reader.length()),
-        data: reader.createSubReader(reader.length(), 0),
+        containerReader: reader.createSubReader(0, reader.length()),
+        dataReader: reader.createSubReader(reader.length(), 0),
       };
     }
 
@@ -119,12 +120,12 @@ export class HeapImporter {
     }
 
     return {
-      container: reader.createSubReader(containerOffset, containerSize),
-      data: reader.createSubReader(dataOffset, dataSize),
+      containerReader: reader.createSubReader(containerOffset, containerSize),
+      dataReader: reader.createSubReader(dataOffset, dataSize),
     };
   }
 
-  private parse(container: ViDataReader): void {
+  private parse(container: ViDataReader, data: ViDataReader, formatVersion: HeapFileVersion): void {
     let parent: HeapNode | null = null;
     let parents = new Map<HeapNode, HeapNode>();
 
@@ -180,12 +181,18 @@ export class HeapImporter {
 
         for (let index = 0; index < attributeCount; index++) {
           const attributeId = container.readVariableInt124('heap.attribute.id');
-          const value = container.readVariableInt24('heap.attribute.value');
-          node.attributes.set(attributeId, value);
+          let value: number;
+          //if ((index == 0) || (formatVersion != HeapFileVersion.C)) {
+            value = container.readVariableInt24('heap.attribute.value');
+          //}
+          //else {
+//            value = data.readVariableInt24('heap.attribute.value');
+          //}
+          node.attributes.push(new HeapAttribute(attributeId, value));
         }
       }
 
-      const content = new HeapContentWrapper(contentDataType, container);
+      const content = new HeapContentWrapper(contentDataType, container, offset);
       node.parseContent(content);
 
       if (scopeInfo === HeapNodeScope.TagOpen) {
@@ -241,9 +248,9 @@ export class HeapImporter {
 
   private static parentClassName(node: HeapNode | null, parents: Map<HeapNode, HeapNode>): string | null {
     while (node != null) {
-      const classId = node.attributes.get(-2);
-      if (classId != null) {
-        return HeapNodeConstants.getClassNameById(classId);
+      const className = node.className;
+      if (className != null) {
+        return className;
       }
       node = parents.get(node) ?? null;
     }

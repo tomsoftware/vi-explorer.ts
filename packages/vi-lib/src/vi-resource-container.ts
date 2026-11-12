@@ -116,6 +116,6 @@ export class ViResourceContainer {
     }
 
     // return uncompressed data
-    return this.reader.createNew(result, containerName);
+    return this.reader.createNew(result, containerName +'[unpack]');
   }
 }

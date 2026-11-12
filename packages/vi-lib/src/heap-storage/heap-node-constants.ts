@@ -6,6 +6,7 @@ export class HeapNodeConstants {
     '-5': 'SL__array',
     '-4': 'SL__reference',
     '-3': 'SL__object',
+  
 
     1: 'activeDiag', // 0
     2: 'activeMarker', // 1
